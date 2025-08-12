@@ -1,16 +1,13 @@
 {
   "name": "study-schedule",
   "version": "0.1.0",
-  "homepage": "https://nuuuing.github.io/study-schedule",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "gh-pages -d out -b gh-pages -t",
-    "predeploy": "npm run build && node scripts/create-nojekyll.js",
-    "postdeploy": "echo 'Deployment complete!'"
+    "export": "next export"
   },
   "dependencies": {
     "date-fns": "^4.1.0",

@@ -12,7 +12,8 @@ interface CalendarProps {
 }
 
 export const Calendar = (props: CalendarProps) => {
-    const { daysInMonth, currentDate, goals, participants, attendance, onDayClick } = props;
+    const { daysInMonth, currentDate, participants, attendance, onDayClick } = props;
+    // goals는 현재 사용하지 않으므로 제외
     return (
         <div
             className="

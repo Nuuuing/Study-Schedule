@@ -1,6 +1,7 @@
 {
   "hosting": {
     "public": "out",
+    "site": "study-schedule-f7005",
     "ignore": [
       "firebase.json",
       "**/.*",

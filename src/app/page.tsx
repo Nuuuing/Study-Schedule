@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, subMonths, addMonths } from 'date-fns';
 import useFirebaseState from '../utils/useFirebaseState';
 import type { Attendance } from '@/types/types';
-import { AttendanceModal, Calendar, GoalAddModal, GoalList, MiniCalendar, SectionLabel, ThemeToggle, UserList, UserStatsModal } from '@/components';
+import { AttendanceModal, Calendar, GoalAddModal, GoalList, MiniCalendar, SectionLabel, UserList, UserStatsModal } from '@/components';
 
 export default function Home() {
 
@@ -13,7 +13,7 @@ export default function Home() {
   // 목표 유저별 필터링 상태
   const [goalFilterUser, setGoalFilterUser] = useState('');
   // 미니 달력용 상태
-  const [miniDate, setMiniDate] = useState(new Date());
+  const [miniDate] = useState(new Date());
   // 통계 모달 상태
   const [showStats, setShowStats] = useState(false);
   // 목표 추가 모달 상태

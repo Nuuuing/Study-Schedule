@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "study-schedule-f7005"
-  }
+    "default": "study-schedule-f7005",
+    "studies": "study-schedule-f7005"
+  },
+  "targets": {},
+  "etags": {}
 }

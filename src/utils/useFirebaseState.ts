@@ -50,7 +50,7 @@ const useFirebaseState = () => {
             // 모든 유저의 goals를 합쳐서 불러오기
             if (!db) return;
             // 기존 goals 구독 해제용
-            let unsubGoalsArr: (() => void)[] = [];
+            const unsubGoalsArr: (() => void)[] = [];
             let allGoals: Goal[] = [];
             p.forEach(user => {
                 const goalsCollectionRef = collection(db, `studies/${user.id}/goals`);
@@ -66,7 +66,7 @@ const useFirebaseState = () => {
                         };
                     });
                     // 기존 allGoals에서 이 유저의 goal만 제거 후 새로 추가
-                    allGoals = allGoals.filter(g => g.participantId !== user.id).concat(userGoals);
+                    allGoals = allGoals.filter((g) => g.participantId !== user.id).concat(userGoals);
                     setGoals([...allGoals]);
                 });
                 unsubGoalsArr.push(unsub);
@@ -80,10 +80,10 @@ const useFirebaseState = () => {
     // 모든 참가자의 출석/공부시간 정보를 한 번에 구독해서 합침
     useEffect(() => {
         if (!db || participants.length === 0) return;
-        let unsubAttendanceList: (() => void)[] = [];
-        let unsubStudyHoursList: (() => void)[] = [];
-        let mergedAttendance: Attendance = {};
-        let mergedStudyHours: StudyHours = {};
+    const unsubAttendanceList: (() => void)[] = [];
+    const unsubStudyHoursList: (() => void)[] = [];
+    const mergedAttendance: Attendance = {};
+    const mergedStudyHours: StudyHours = {};
         participants.forEach((user) => {
             // 출석 구독
             const attendanceDocRef = doc(db, `studies/${user.id}/data/attendance`);
@@ -135,9 +135,15 @@ const useFirebaseState = () => {
         if (!db || !participantId) return;
         try {
             const ref = doc(db, `studies/${participantId}/goals`, id);
-            const filtered: any = {};
+            const filtered: Partial<Goal> = {};
             Object.entries(data).forEach(([k, v]) => {
-                if (v !== undefined) filtered[k] = v;
+                if (v !== undefined) {
+                    if (k === 'completed') {
+                        (filtered as Partial<Goal>)[k] = Boolean(v);
+                    } else if (k === 'content' || k === 'participantId' || k === 'id') {
+                        (filtered as Partial<Goal>)[k] = String(v);
+                    }
+                }
             });
             await updateDoc(ref, filtered);
         } catch (e) {
@@ -205,7 +211,7 @@ const useFirebaseState = () => {
         try {
             const attendanceRef = doc(db, `studies/${activeUserId}/data/attendance`);
             const prev = attendance[date]?.[participantId];
-            let updatedAttendance = { ...attendance };
+            const updatedAttendance = { ...attendance };
             if (!attendance[date]) updatedAttendance[date] = {};
             if (!prev) {
                 // 없으면 추가 (참석)
@@ -255,10 +261,10 @@ const useFirebaseState = () => {
         try {
             const studyHoursRef = doc(db, `studies/${participantId}/data/studyHours`);
             // 기존 데이터를 불러와서 안전하게 머지
-            let prevData: any = {};
+            let prevData: Record<string, { hours: number; minutes: number }> = {};
             try {
                 const prevSnap = await getDoc(studyHoursRef);
-                if (prevSnap.exists()) prevData = prevSnap.data();
+                if (prevSnap.exists()) prevData = prevSnap.data() as Record<string, { hours: number; minutes: number }>;
             } catch {}
             await setDoc(studyHoursRef, {
                 ...prevData,

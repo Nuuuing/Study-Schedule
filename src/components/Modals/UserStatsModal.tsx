@@ -2,10 +2,10 @@ import React, { useState, useMemo } from 'react';
 import StatsCard from '../StatsCard';
 
 type UserStatsModalProps = {
-    participants: any[];
-    studyHours: any;
-    attendance: any;
-    goals?: any[];
+    participants: { id: string; name: string; color?: string; icon?: string }[];
+    studyHours: Record<string, Record<string, { hours: number; minutes: number }>>;
+    attendance: Record<string, Record<string, { present: boolean; start?: string; end?: string }>>;
+    goals?: { participantId: string; completed: boolean }[];
     onClose: () => void;
 };
 
@@ -19,7 +19,7 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
         if (!start || !end) return { hours: 0, minutes: 0 };
         const [sh, sm] = start.split(':').map(Number);
         const [eh, em] = end.split(':').map(Number);
-        let startM = sh * 60 + sm;
+        const startM = sh * 60 + sm;
         let endM = eh * 60 + em;
         if (endM < startM) endM += 24 * 60; // 자정 넘김 보정
         const diff = endM - startM;
@@ -68,10 +68,21 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
     }, [selectedUser, mode, studyHours, attendance]);
 
     // 목표 통계 계산
-    const userGoals = goals.filter((g: any) => g.participantId === selectedUser);
-    const completedGoals = userGoals.filter((g: any) => g.completed);
+    const userGoals = goals.filter((g) => g.participantId === selectedUser);
+    const completedGoals = userGoals.filter((g) => g.completed);
     const totalGoals = userGoals.length;
     const completedCount = completedGoals.length;
+    // 총 공부시간 계산
+    let totalStudy = { hours: 0, minutes: 0 };
+    if (selectedUser && stats) {
+        totalStudy = Object.values(stats).reduce((acc: { hours: number; minutes: number }, b: { hours: number; minutes: number }) => {
+            acc.minutes += b.minutes;
+            acc.hours += b.hours;
+            return acc;
+        }, { hours: 0, minutes: 0 });
+        totalStudy.hours += Math.floor(totalStudy.minutes / 60);
+        totalStudy.minutes = totalStudy.minutes % 60;
+    }
 
     return (
         <div className="fixed inset-0 bg-gray-900/95 flex items-center justify-center z-50">
@@ -85,7 +96,7 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
                         className="cursor-pointer p-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500"
                     >
                         <option value="">유저 선택</option>
-                        {participants.map((p: any) => <option key={p.id} value={p.id} >{p.name}</option>)}
+                        {participants.map((p) => <option key={p.id} value={p.id} >{p.name}</option>)}
                     </select>
                 </div>
                 <div className="flex gap-4 mb-2">
@@ -102,19 +113,10 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
                 {selectedUser && (
                     <div className="grid grid-cols-3 gap-4 mb-2">
                         <StatsCard label="목표 완료" value={<span>{completedCount} <span className="text-base font-normal opacity-70">/ {totalGoals}</span></span>} sub="완료/총 목표" color="#fff" bg="linear-gradient(135deg, #7f53ff 60%, #3b82f6 100%)" />
-                        <StatsCard label="참여일수" value={<span>{Object.values(stats || {}).reduce((a: any, b: any) => a + b.days.size, 0)}</span>} sub="출석한 일수 합계" color="#fff" bg="linear-gradient(135deg, #23244a 60%, #3b82f6 100%)" />
+                        <StatsCard label="참여일수" value={<span>{Object.values(stats || {}).reduce((a, b) => a + b.days.size, 0)}</span>} sub="출석한 일수 합계" color="#fff" bg="linear-gradient(135deg, #23244a 60%, #3b82f6 100%)" />
                         <StatsCard
                             label="총 공부시간"
-                            value={(() => {
-                                const total = Object.values(stats || {}).reduce((acc: any, b: any) => {
-                                    acc.minutes += b.minutes;
-                                    acc.hours += b.hours;
-                                    return acc;
-                                }, { hours: 0, minutes: 0 });
-                                total.hours += Math.floor(total.minutes / 60);
-                                total.minutes = total.minutes % 60;
-                                return <span>{total.hours}시간 {total.minutes}분</span>;
-                            })()}
+                            value={<span>{totalStudy.hours}시간 {totalStudy.minutes}분</span>}
                             sub="누적 공부시간"
                             color="#fff"
                             bg="linear-gradient(135deg, #23244a 60%, #06b6d4 100%)"
