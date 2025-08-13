@@ -42,18 +42,20 @@ export const GoalAddModal = (props: GoalModalProps) => {
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/20 dark:bg-black/40 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-xl p-8 w-[350px] shadow-2xl flex flex-col gap-4">
                 <h3 className="text-lg font-bold mb-2">목표 추가</h3>
                 <select
                     value={selectedIdx}
                     onChange={e => setSelectedIdx(e.target.value)}
-                    className="w-full p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600"
+                    className="w-full p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:border-gray-300 dark:hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={participants.length === 0}
                 >
                     <option value="">참여자 선택</option>
-                    {participants.map((p, idx) => (
-                        <option key={p.id + '-' + idx} value={idx.toString()}>{p.name}</option>
+                    {participants
+                        .sort((a, b) => a.name.localeCompare(b.name, 'ko', { numeric: true }))
+                        .map((p, idx) => (
+                        <option key={p.id + '-' + idx} value={participants.indexOf(p).toString()}>{p.name}</option>
                     ))}
                 </select>
                 <input

@@ -1,25 +1,47 @@
+@config "../../tailwind.config.ts";
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
 @layer base {
-  body {
-    background: var(--background);
-    color: var(--foreground);
+  html, body {
     font-family: 'Paperlogy', sans-serif;
+  }
+  
+  /* 다크모드 기본 스타일 */
+  html.dark {
+    background-color: #111827;
+    color: #f9fafb;
+  }
+  
+  html.light, html {
+    background-color: #ffffff;
+    color: #111827;
+  }
+
+  /* 커스텀 스크롤바 스타일 */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #8b5cf6 0%, #a855f7 50%, #9333ea 100%);
+    border-radius: 20px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #7c3aed 0%, #9333ea 50%, #7e22ce 100%);
+    background-clip: content-box;
+  }
+
+  /* Firefox용 스크롤바 스타일 */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #8b5cf6 transparent;
   }
 }
 

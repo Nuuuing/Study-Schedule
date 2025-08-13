@@ -1,21 +1,99 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, updateDoc, deleteDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, updateDoc, deleteDoc, deleteField, Firestore, QuerySnapshot, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { Participant, Goal, Attendance, StudyHours } from '../types/types';
+
+interface ScheduleItem {
+    content: string;
+    createdAt: number;
+}
+type Schedules = {
+    [date: string]: ScheduleItem[];
+};
 
 const useFirebaseState = () => {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [goals, setGoals] = useState<Goal[]>([]);
     const [attendance, setAttendance] = useState<Attendance>({});
     const [studyHours, setStudyHoursState] = useState<StudyHours>({});
+    const [schedules, setSchedules] = useState<Schedules>({});
     const [activeUserId, setActiveUserId] = useState<string | null>(null); // 현재 선택된 유저 id
     const [db, setDb] = useState<ReturnType<typeof getFirestore> | null>(null);
+
+    useEffect(() => {
+        if (!db) return;
+        // Firestore 타입 체크
+        if (!(db instanceof Firestore)) return;
+        const schedulesCol = collection(db, 'schedules');
+        const unsub = onSnapshot(schedulesCol, (snapshot: QuerySnapshot<DocumentData>) => {
+            const newSchedules: Schedules = {};
+            snapshot.docs.forEach((docSnap: QueryDocumentSnapshot<DocumentData>) => {
+                const date = docSnap.id;
+                const data = docSnap.data();
+                newSchedules[date] = data.items || [];
+            });
+            setSchedules(newSchedules);
+        });
+        return () => unsub();
+    }, [db]);
+
+    // 공통 스케줄 추가
+    const addSchedule = async (date: string, content: string) => {
+        if (!db) return;
+        try {
+            const ref = doc(db, `schedules/${date}`);
+            const prevSnap = await getDoc(ref);
+            let prevItems: ScheduleItem[] = [];
+            if (prevSnap.exists()) {
+                prevItems = prevSnap.data().items || [];
+            }
+            const newItem: ScheduleItem = {
+                content,
+                createdAt: Date.now(),
+            };
+            await setDoc(ref, { items: [...prevItems, newItem] }, { merge: true });
+        } catch (e) {
+            console.error('Error adding schedule:', e);
+        }
+    };
+
+    // 공통 스케줄 삭제
+    const removeSchedule = useCallback(async (date: string, idx: number) => {
+        if (!db) return;
+        try {
+            const ref = doc(db, `schedules/${date}`);
+            const prevSnap = await getDoc(ref);
+            if (!prevSnap.exists()) return;
+            const prevItems: ScheduleItem[] = prevSnap.data().items || [];
+            const newItems = prevItems.slice(0, idx).concat(prevItems.slice(idx + 1));
+            await setDoc(ref, { items: newItems }, { merge: true });
+        } catch (e) {
+            console.error('Error removing schedule:', e);
+        }
+    }, [db]);
+
+    // 공통 스케줄 수정
+    const updateSchedule = useCallback(async (date: string, idx: number, newContent: string) => {
+        if (!db) return;
+        try {
+            const ref = doc(db, `schedules/${date}`);
+            const prevSnap = await getDoc(ref);
+            if (!prevSnap.exists()) return;
+            const prevItems: ScheduleItem[] = prevSnap.data().items || [];
+            if (!prevItems[idx]) return;
+            prevItems[idx] = { ...prevItems[idx], content: newContent };
+            await setDoc(ref, { items: prevItems }, { merge: true });
+        } catch (e) {
+            console.error('Error updating schedule:', e);
+        }
+    }, [db]);
 
     useEffect(() => {
         const firebaseConfig = {
             apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
             authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-            databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ,
+            databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
             projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
             storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
             messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
@@ -80,10 +158,10 @@ const useFirebaseState = () => {
     // 모든 참가자의 출석/공부시간 정보를 한 번에 구독해서 합침
     useEffect(() => {
         if (!db || participants.length === 0) return;
-    const unsubAttendanceList: (() => void)[] = [];
-    const unsubStudyHoursList: (() => void)[] = [];
-    const mergedAttendance: Attendance = {};
-    const mergedStudyHours: StudyHours = {};
+        const unsubAttendanceList: (() => void)[] = [];
+        const unsubStudyHoursList: (() => void)[] = [];
+        const mergedAttendance: Attendance = {};
+        const mergedStudyHours: StudyHours = {};
         participants.forEach((user) => {
             // 출석 구독
             const attendanceDocRef = doc(db, `studies/${user.id}/data/attendance`);
@@ -242,6 +320,32 @@ const useFirebaseState = () => {
         }
     };
 
+    // 특정 날짜의 출석 기록 삭제
+    const removeAttendanceForDate = async (date: string, participantId: string) => {
+        if (!db) return;
+        try {
+            const attendanceRef = doc(db, `studies/${participantId}/data/attendance`);
+            await updateDoc(attendanceRef, {
+                [date]: deleteField()
+            });
+            
+            // 로컬 상태도 즉시 업데이트
+            setAttendance(prevAttendance => {
+                const updatedAttendance = { ...prevAttendance };
+                if (updatedAttendance[date] && updatedAttendance[date][participantId]) {
+                    delete updatedAttendance[date][participantId];
+                    // 해당 날짜에 다른 참가자가 없으면 날짜 자체도 삭제
+                    if (Object.keys(updatedAttendance[date]).length === 0) {
+                        delete updatedAttendance[date];
+                    }
+                }
+                return updatedAttendance;
+            });
+        } catch (e) {
+            console.error("Error removing attendance for date: ", e);
+        }
+    };
+
     // 유저 정보(이름, 색상, 아이콘) 수정
     const updateParticipant = async (id: string, data: Partial<Participant>) => {
         if (!db) return;
@@ -256,6 +360,7 @@ const useFirebaseState = () => {
             console.error("Error updating participant: ", e);
         }
     };
+    
     const updateStudyHours = async (date: string, participantId: string, hours: number, minutes: number) => {
         if (!db || !participantId) return;
         try {
@@ -265,7 +370,7 @@ const useFirebaseState = () => {
             try {
                 const prevSnap = await getDoc(studyHoursRef);
                 if (prevSnap.exists()) prevData = prevSnap.data() as Record<string, { hours: number; minutes: number }>;
-            } catch {}
+            } catch { }
             await setDoc(studyHoursRef, {
                 ...prevData,
                 [date]: { hours: Number(hours), minutes: Number(minutes) }
@@ -280,6 +385,10 @@ const useFirebaseState = () => {
         goals,
         attendance,
         studyHours,
+        schedules,
+        addSchedule,
+        removeSchedule,
+        updateSchedule,
         activeUserId,
         setActiveUserId,
         addParticipant,
@@ -290,6 +399,7 @@ const useFirebaseState = () => {
         toggleGoalCompletion,
         toggleAttendance,
         setAttendanceDetail,
+        removeAttendanceForDate,
         setStudyHours: updateStudyHours,
         updateParticipant,
     };

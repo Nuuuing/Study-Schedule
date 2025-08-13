@@ -85,30 +85,32 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
     }
 
     return (
-        <div className="fixed inset-0 bg-gray-900/95 flex items-center justify-center z-50">
-            <div className="bg-gray-800 rounded-2xl p-8 w-[520px] shadow-2xl flex flex-col gap-6 border border-gray-700 relative">
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl cursor-pointer">✕</button>
+        <div className="fixed inset-0 bg-black/20 dark:bg-black/40 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 w-[520px] shadow-2xl flex flex-col gap-6 border border-gray-200 dark:border-gray-700 relative">
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white text-xl cursor-pointer">✕</button>
                 <div className="flex flex-col gap-2 mb-2">
-                    <h3 className="text-2xl font-bold text-white mb-1">유저 통계</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">유저 통계</h3>
                     <select
                         value={selectedUser}
                         onChange={e => setSelectedUser(e.target.value)}
-                        className="cursor-pointer p-2 rounded-md bg-gray-900 border border-gray-700 text-white focus:ring-2 focus:ring-blue-500"
+                        className="cursor-pointer p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                     >
                         <option value="">유저 선택</option>
-                        {participants.map((p) => <option key={p.id} value={p.id} >{p.name}</option>)}
+                        {participants
+                            .sort((a, b) => a.name.localeCompare(b.name, 'ko', { numeric: true }))
+                            .map((p) => <option key={p.id} value={p.id} >{p.name}</option>)}
                     </select>
                 </div>
                 <div className="flex gap-4 mb-2">
                     <button
                         onClick={() => setMode('month')}
-                        className={`flex-1 px-2 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${mode === 'month' ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' : 'bg-gray-900 text-gray-300 border border-gray-700'}`}>월별</button>
+                        className={`flex-1 px-2 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${mode === 'month' ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' : 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700'}`}>월별</button>
                     <button
                         onClick={() => setMode('week')}
-                        className={`flex-1 px-2 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${mode === 'week' ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' : 'bg-gray-900 text-gray-300 border border-gray-700'}`}>주별</button>
+                        className={`flex-1 px-2 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${mode === 'week' ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' : 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700'}`}>주별</button>
                     <button
                         onClick={() => setMode('day')}
-                        className={`flex-1 px-2 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${mode === 'day' ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' : 'bg-gray-900 text-gray-300 border border-gray-700'}`}>일별</button>
+                        className={`flex-1 px-2 py-1 rounded-lg font-semibold transition-colors cursor-pointer ${mode === 'day' ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white' : 'bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700'}`}>일별</button>
                 </div>
                 {selectedUser && (
                     <div className="grid grid-cols-3 gap-4 mb-2">
@@ -124,31 +126,31 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
                     </div>
                 )}
                 {selectedUser && stats && (
-                    <div className="max-h-60 overflow-y-auto rounded-xl bg-gray-900 border border-gray-800 p-0">
-                        <table className="w-full text-sm text-white table-fixed">
+                    <div className="max-h-60 overflow-y-auto rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-0">
+                        <table className="w-full text-sm text-gray-900 dark:text-white table-fixed">
                             <colgroup>
                                 <col style={{ width: '40%' }} />
                                 <col style={{ width: '30%' }} />
                                 <col style={{ width: '30%' }} />
                             </colgroup>
                             <thead>
-                                <tr className="border-b border-gray-800">
-                                    <th className="text-left px-4 py-2 font-semibold text-gray-300">구분</th>
-                                    <th className="text-center px-4 py-2 font-semibold text-gray-300">공부시간</th>
-                                    <th className="text-center px-4 py-2 font-semibold text-gray-300">참여일수</th>
+                                <tr className="border-b border-gray-200 dark:border-gray-800">
+                                    <th className="text-left px-4 py-2 font-semibold text-gray-600 dark:text-gray-300">구분</th>
+                                    <th className="text-center px-4 py-2 font-semibold text-gray-600 dark:text-gray-300">공부시간</th>
+                                    <th className="text-center px-4 py-2 font-semibold text-gray-600 dark:text-gray-300">참여일수</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {Object.entries(stats).map(([k, v], idx) => (
-                                    <tr key={k} className={`group transition ${idx % 2 === 0 ? 'bg-gray-800' : 'bg-gray-900'} hover:bg-blue-950/60`}>
+                                    <tr key={k} className={`group transition ${idx % 2 === 0 ? 'bg-gray-100 dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900'} hover:bg-blue-50 dark:hover:bg-blue-950/60`}>
                                         <td className="px-4 py-2 rounded-l-lg font-medium align-middle">
                                             <span className="inline-block w-2 h-2 rounded-full bg-blue-400/60 group-hover:bg-blue-500/80 mr-2"></span>
                                             {k}
                                         </td>
-                                        <td className="px-4 py-2 text-blue-200 font-bold tracking-wide text-center align-middle">
+                                        <td className="px-4 py-2 text-blue-600 dark:text-blue-200 font-bold tracking-wide text-center align-middle">
                                             {v.hours}시간 {v.minutes}분
                                         </td>
-                                        <td className="px-4 py-2 rounded-r-lg text-purple-200 font-semibold text-center align-middle">
+                                        <td className="px-4 py-2 rounded-r-lg text-purple-600 dark:text-purple-200 font-semibold text-center align-middle">
                                             {v.days.size}
                                         </td>
                                     </tr>
@@ -157,7 +159,7 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
                         </table>
                     </div>
                 )}
-                {!selectedUser && <div className="text-gray-400 text-center">유저를 선택하세요.</div>}
+                {!selectedUser && <div className="text-gray-500 dark:text-gray-400 text-center">유저를 선택하세요.</div>}
             </div>
         </div>
     );

@@ -7,13 +7,37 @@ import type { Attendance } from '@/types/types';
 import { AttendanceModal, Calendar, GoalAddModal, GoalList, MiniCalendar, SectionLabel, UserList, UserStatsModal } from '@/components';
 
 export default function Home() {
-
-  // 테마 상태 관리
+  // Theme 상태 관리
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  
+  useEffect(() => {
+    // 로컬 스토리지에서 테마 불러오기
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    } else {
+      // 시스템 설정 확인
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(prefersDark ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', prefersDark);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  };
+
   // 목표 유저별 필터링 상태
   const [goalFilterUser, setGoalFilterUser] = useState('');
   // 미니 달력용 상태
-  const [miniDate] = useState(new Date());
+  const [miniDate, setMiniDate] = useState<Date | null>(null);
+  useEffect(() => {
+    setMiniDate(new Date());
+  }, []);
   // 통계 모달 상태
   const [showStats, setShowStats] = useState(false);
   // 목표 추가 모달 상태
@@ -25,22 +49,6 @@ export default function Home() {
   // 캘린더 유저별 필터 상태 추가
   const [calendarFilterUser, setCalendarFilterUser] = useState('');
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
-  };
-
-  // 출석/시간 입력 모달용 핸들러들 (임시 기본구현)
   const handleAddUserToDate = (id: string) => {
     setAttendanceInput(prev => ({ ...prev, [id]: { present: false, start: '', end: '' } }));
   };
@@ -59,17 +67,27 @@ export default function Home() {
     }));
   };
 
-  const handleRemoveUserFromDate = (id: string) => {
+  const handleRemoveUserFromDate = (id: string) => {    
+    // 임시 출석 입력에서 제거 (모달 리스트에서 즉시 사라짐)
     setAttendanceInput(prev => {
       const copy = { ...prev };
       delete copy[id];
       return copy;
     });
+    
+    // Firebase에서 해당 날짜의 출석 기록 삭제
+    if (selectedDate) {
+      const dateKey = format(selectedDate, 'yyyy-MM-dd');
+      removeAttendanceForDate(dateKey, id);
+    }
   };
 
-  const { participants, goals, attendance, studyHours, addParticipant, removeParticipant, addGoal, toggleGoalCompletion, setAttendanceDetail, updateParticipant, updateGoal, deleteGoal } = useFirebaseState();
+  const { participants, goals, attendance, studyHours, schedules, addSchedule, removeSchedule, addParticipant, removeParticipant, addGoal, toggleGoalCompletion, setAttendanceDetail, removeAttendanceForDate, updateParticipant, updateGoal, deleteGoal, updateSchedule } = useFirebaseState();
 
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
+  useEffect(() => {
+    setCurrentDate(new Date());
+  }, []);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -77,11 +95,11 @@ export default function Home() {
   const [attendanceInput, setAttendanceInput] = useState<Attendance[string]>({});
 
   // 달력 날짜 생성
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(currentDate);
-  const startDate = startOfWeek(monthStart);
-  const endDate = endOfWeek(monthEnd);
-  const daysInMonth = eachDayOfInterval({ start: startDate, end: endDate });
+  const monthStart = currentDate ? startOfMonth(currentDate) : null;
+  const monthEnd = currentDate ? endOfMonth(currentDate) : null;
+  const startDate = monthStart ? startOfWeek(monthStart) : null;
+  const endDate = monthEnd ? endOfWeek(monthEnd) : null;
+  const daysInMonth = (startDate && endDate) ? eachDayOfInterval({ start: startDate, end: endDate }) : [];
 
   const handleOpenModal = (date: Date) => {
     setSelectedDate(date);
@@ -98,13 +116,16 @@ export default function Home() {
     });
     setShowModal(false);
   };
-  
+
   const handleToggleGoalCompletion = (goalId: string, participantId: string) => {
     toggleGoalCompletion(goalId, participantId);
   };
 
+  if (!miniDate || !currentDate) return null;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+          
       <div className="flex flex-1 relative">
         {/* 왼쪽 사이드바 */}
         <aside className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col p-6 gap-8 
@@ -145,8 +166,8 @@ export default function Home() {
 
           {!isLeftSidebarCollapsed && (
             <>
-              <MiniCalendar currentDate={miniDate}  />
-              <div>
+              {miniDate && <MiniCalendar currentDate={miniDate} />}
+              <div className="flex flex-col flex-1 min-h-0">
                 <SectionLabel className="mb-2">이번달 목표</SectionLabel>
 
                 <div className='flex items-center'>
@@ -159,10 +180,12 @@ export default function Home() {
                   <select
                     value={goalFilterUser}
                     onChange={e => setGoalFilterUser(e.target.value)}
-                    className="mb-2 w-[90%] p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mb-2 w-[90%] p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:border-gray-300 dark:hover:border-gray-500"
                   >
                     <option value="">전체</option>
-                    {participants.map(p => (
+                    {participants
+                      .sort((a, b) => a.name.localeCompare(b.name, 'ko', { numeric: true }))
+                      .map(p => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
@@ -174,13 +197,15 @@ export default function Home() {
                 >
                   목표 추가
                 </button>
-                <GoalList
-                  goals={goalFilterUser ? goals.filter(g => g.participantId === goalFilterUser) : goals}
-                  participants={participants}
-                  onToggle={handleToggleGoalCompletion}
-                  onEdit={updateGoal}
-                  onDelete={deleteGoal}
-                />
+                <div className="overflow-y-auto overflow-x-hidden flex-1 min-h-0 pr-2 custom-scrollbar">
+                  <GoalList
+                    goals={goalFilterUser ? goals.filter(g => g.participantId === goalFilterUser) : goals}
+                    participants={participants}
+                    onToggle={handleToggleGoalCompletion}
+                    onEdit={updateGoal}
+                    onDelete={deleteGoal}
+                  />
+                </div>
               </div>
             </>
           )}
@@ -189,7 +214,7 @@ export default function Home() {
         {/* 모바일용 오버레이 */}
         {isLeftSidebarOpen && (
           <div
-            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="lg:hidden fixed inset-0 bg-transparent z-40"
             onClick={() => setIsLeftSidebarOpen(false)}
           />
         )}
@@ -211,21 +236,23 @@ export default function Home() {
               {/* 모바일용 사이드바 토글 버튼 */}
               <button
                 onClick={() => setIsLeftSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-md bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
+                className="lg:hidden p-2 rounded-md bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors cursor-pointer"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-              <SectionLabel className="text-lg sm:text-xl lg:text-3xl mb-0 whitespace-nowrap">{format(currentDate, 'yyyy년 MM월')}</SectionLabel>
+              {currentDate && <SectionLabel className="text-lg sm:text-xl lg:text-3xl mb-0 whitespace-nowrap">{format(currentDate, 'yyyy년 MM월')}</SectionLabel>}
               <select
                 value={calendarFilterUser}
                 onChange={e => setCalendarFilterUser(e.target.value)}
-                className="ml-1 p-1.5 sm:ml-4 sm:p-2 rounded-md bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-xs sm:text-sm"
+                className="ml-1 p-2 sm:ml-4 sm:p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:border-gray-300 dark:hover:border-gray-500 text-xs sm:text-sm"
                 style={{ minWidth: 80 }}
               >
                 <option value="">전체</option>
-                {participants.map(p => (
+                {participants
+                  .sort((a, b) => a.name.localeCompare(b.name, 'ko', { numeric: true }))
+                  .map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
@@ -239,7 +266,7 @@ export default function Home() {
                 오늘
               </button>
               <button
-                onClick={() => setCurrentDate(subMonths(currentDate, 1))}
+                onClick={() => currentDate && setCurrentDate(subMonths(currentDate, 1))}
                 className="p-2 rounded-md bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors cursor-pointer"
               >
                 <svg className="w-4 h-4 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,7 +274,7 @@ export default function Home() {
                 </svg>
               </button>
               <button
-                onClick={() => setCurrentDate(addMonths(currentDate, 1))}
+                onClick={() => currentDate && setCurrentDate(addMonths(currentDate, 1))}
                 className="p-2 rounded-md bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors cursor-pointer"
               >
                 <svg className="w-4 h-4 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -284,7 +311,7 @@ export default function Home() {
             className="
               bg-white dark:bg-gray-800
               rounded-xl sm:rounded-2xl
-              shadow
+              shadow-lg border border-[#e9e9e9] dark:border-gray-700
               p-1.5 sm:p-3 md:p-4 lg:p-6
               mt-2 mb-4
               overflow-x-auto
@@ -299,6 +326,7 @@ export default function Home() {
               goals={goals}
               participants={calendarFilterUser ? participants.filter(p => p.id === calendarFilterUser) : participants}
               attendance={calendarFilterUser ? Object.fromEntries(Object.entries(attendance).map(([date, obj]) => [date, Object.fromEntries(Object.entries(obj).filter(([pid]) => pid === calendarFilterUser))])) : attendance}
+              schedules={schedules}
               onDayClick={handleOpenModal}
             />
           </div>
@@ -321,15 +349,29 @@ export default function Home() {
                 </svg>
               </button>
             </div>
-            <form onSubmit={e => { e.preventDefault(); addParticipant(newParticipantName); setNewParticipantName(''); }} className="mb-6 flex gap-2">
+            <form onSubmit={e => { 
+                e.preventDefault(); 
+                if (newParticipantName.trim()) {
+                    addParticipant(newParticipantName.trim()); 
+                    setNewParticipantName(''); 
+                }
+            }} className="mb-6 flex gap-2 items-stretch">
               <input
                 type="text"
                 value={newParticipantName}
                 onChange={e => setNewParticipantName(e.target.value)}
                 placeholder="참여자 이름 입력"
-                className="flex-1 p-2 rounded-md bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 min-w-0 p-2 rounded-md bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <button type="submit" className="p-2 rounded-md bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors">
+              <button 
+                type="submit" 
+                disabled={!newParticipantName.trim()}
+                className={`px-4 py-2 rounded-md font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${
+                    newParticipantName.trim() 
+                        ? 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer' 
+                        : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                }`}
+              >
                 추가
               </button>
             </form>
@@ -363,6 +405,30 @@ export default function Home() {
         onRemoveUser={handleRemoveUserFromDate}
         onClose={() => setShowModal(false)}
         onSave={handleSaveAttendance}
+        schedules={schedules}
+        onAddSchedule={(dateKey, content) => {
+          let key = dateKey;
+          if (selectedDate instanceof Date) {
+            key = format(selectedDate, 'yyyy-MM-dd');
+          }
+          addSchedule(key, content);
+        }}
+        onRemoveSchedule={(dateKey, idx) => {
+          let key = dateKey;
+          if (selectedDate instanceof Date) {
+            key = format(selectedDate, 'yyyy-MM-dd');
+          }
+          removeSchedule(key, idx);
+        }}
+        onUpdateSchedule={(dateKey, idx, newContent) => {
+          let key = dateKey;
+          if (selectedDate instanceof Date) {
+            key = format(selectedDate, 'yyyy-MM-dd');
+          }
+          if (newContent.trim()) {
+            updateSchedule(key, idx, newContent.trim());
+          }
+        }}
       />
       <GoalAddModal
         open={showGoalAdd}
