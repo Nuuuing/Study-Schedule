@@ -2,8 +2,15 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --font-paperlogy: 'Paperlogy', sans-serif;
+    --font-nyangi: 'Cafe24NyangiBlack', sans-serif;
+  }
+  
   html, body {
-    font-family: 'Paperlogy', sans-serif;
+    font-family: var(--font-paperlogy);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
   /* 다크모드 기본 스타일 */
@@ -17,6 +24,10 @@
     color: #111827;
   }
 
+  .nayn{
+    font-family: var(--font-nyangi);
+  }
+
   /* 커스텀 스크롤바 스타일 */
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
@@ -27,21 +38,21 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #8b5cf6 0%, #a855f7 50%, #9333ea 100%);
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
     border-radius: 20px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #7c3aed 0%, #9333ea 50%, #7e22ce 100%);
+    background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%);
     background-clip: content-box;
   }
 
   /* Firefox용 스크롤바 스타일 */
   .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: #8b5cf6 transparent;
+    scrollbar-color: #3b82f6 transparent;
   }
 }
 
@@ -106,4 +117,12 @@
   src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2') format('woff2');
   font-weight: 900;
   font-style: normal;
+}
+
+@font-face {
+    font-family: 'Cafe24NyangiBlack';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2410-1@1.0/Cafe24Nyangi-B-v1.0.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
 }

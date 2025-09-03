@@ -1,31 +1,52 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { Geist, Geist_Mono } from "next/font/google";
-import Home from './page';
 
-const geistSans = Geist({
-    variable: "--font-geist-sans",
-    subsets: ["latin"],
-});
-const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
-    subsets: ["latin"],
-});
+import React, { useState, useEffect, ReactNode } from 'react';
 
-export default function ThemeProvider() {
+interface ThemeProviderProps {
+    children: ReactNode;
+}
+
+export default function ThemeProvider({ children }: ThemeProviderProps) {
     const [mounted, setMounted] = useState(false);
-    
+    const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
+
     useEffect(() => {
         setMounted(true);
+        
+        // 로컬 스토리지에서 테마 불러오기
+        const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null;
+        if (savedTheme) {
+            setTheme(savedTheme);
+        }
     }, []);
-    
+
+    useEffect(() => {
+        if (!mounted) return;
+
+        const root = document.documentElement;
+        
+        if (theme === 'dark') {
+            root.classList.add('dark');
+        } else if (theme === 'light') {
+            root.classList.remove('dark');
+        } else {
+            // system 모드일 때
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            if (mediaQuery.matches) {
+                root.classList.add('dark');
+            } else {
+                root.classList.remove('dark');
+            }
+        }
+    }, [theme, mounted]);
+
     if (!mounted) {
-        return null; // hydration 문제 방지
+        return null;
     }
-    
+
     return (
-        <div className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-            <Home />
+        <div>
+            {children}
         </div>
     );
 }

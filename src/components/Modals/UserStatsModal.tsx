@@ -1,18 +1,21 @@
 import React, { useState, useMemo } from 'react';
-import StatsCard from '../StatsCard';
+import { startOfWeek, endOfWeek, format } from 'date-fns';
+import StatsCard from '../Common/StatsCard';
+import useFirebaseState from '@/utils/useFirebaseState';
 
 type UserStatsModalProps = {
     participants: { id: string; name: string; color?: string; icon?: string }[];
     studyHours: Record<string, Record<string, { hours: number; minutes: number }>>;
-    attendance: Record<string, Record<string, { present: boolean; start?: string; end?: string }>>;
-    goals?: { participantId: string; completed: boolean }[];
+    participate: Record<string, Record<string, { present: boolean; start?: string; end?: string }>>;
     onClose: () => void;
 };
 
 export const UserStatsModal = (props: UserStatsModalProps) => {
-    const { participants, studyHours, attendance, goals = [], onClose } = props;
+    const { participants, studyHours, participate, onClose } = props;
     const [selectedUser, setSelectedUser] = useState('');
     const [mode, setMode] = useState<'month' | 'week' | 'day'>('month');
+
+    const { goals } = useFirebaseState();
 
     // 시간 차이 계산 함수
     function getTimeDiff(start: string, end: string) {
@@ -31,29 +34,49 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
         // 날짜 합집합 구하기
         const allDates = Array.from(new Set([
             ...Object.keys(studyHours || {}),
-            ...Object.keys(attendance || {})
+            ...Object.keys(participate || {})
         ])).sort();
+        
         const getWeek = (date: string) => {
             const d = new Date(date);
-            const first = d.getDate() - d.getDay();
-            const weekStart = new Date(d);
-            weekStart.setDate(first);
-            return weekStart.toISOString().slice(0, 10);
+            const weekStart = startOfWeek(d, { weekStartsOn: 0 }); // 일요일을 주의 시작으로
+            return format(weekStart, 'yyyy-MM-dd');
         };
-        const group: Record<string, { hours: number, minutes: number, days: Set<string> }> = {};
+
+        const group: Record<string, { hours: number, minutes: number, days: Set<string>, weekStart?: string, weekEnd?: string }> = {};
+        
         for (const date of allDates) {
             const entry = studyHours[date]?.[selectedUser];
-            const attend = attendance[date]?.[selectedUser];
+            const attend = participate[date]?.[selectedUser];
             let key = '';
-            if (mode === 'month') key = date.slice(0, 7);
-            else if (mode === 'week') key = getWeek(date);
-            else key = date;
+            
+            if (mode === 'month') {
+                key = date.slice(0, 7);
+            } else if (mode === 'week') {
+                key = getWeek(date);
+                // 주별일 때 주의 시작과 끝 날짜 계산
+                if (!group[key]) {
+                    const weekStart = startOfWeek(new Date(date), { weekStartsOn: 0 });
+                    const weekEnd = endOfWeek(new Date(date), { weekStartsOn: 0 });
+                    group[key] = { 
+                        hours: 0, 
+                        minutes: 0, 
+                        days: new Set(),
+                        weekStart: format(weekStart, 'MM/dd'),
+                        weekEnd: format(weekEnd, 'MM/dd')
+                    };
+                }
+            } else {
+                key = date;
+            }
+            
             if (!group[key]) group[key] = { hours: 0, minutes: 0, days: new Set() };
+            
             if (entry) {
                 group[key].hours += entry.hours;
                 group[key].minutes += entry.minutes;
             } else if (attend && attend.start && attend.end) {
-                // studyHours가 없고 출석에 start/end가 있으면 시간 계산
+                // studyHours가 없고 참가에 start/end가 있으면 시간 계산
                 const diff = getTimeDiff(attend.start, attend.end);
                 group[key].hours += diff.hours;
                 group[key].minutes += diff.minutes;
@@ -65,10 +88,10 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
             g.minutes = g.minutes % 60;
         });
         return group;
-    }, [selectedUser, mode, studyHours, attendance]);
+    }, [selectedUser, mode, studyHours, participate]);
 
     // 목표 통계 계산
-    const userGoals = goals.filter((g) => g.participantId === selectedUser);
+    const userGoals = goals.filter((g) => g.userId === selectedUser);
     const completedGoals = userGoals.filter((g) => g.completed);
     const totalGoals = userGoals.length;
     const completedCount = completedGoals.length;
@@ -141,20 +164,31 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {Object.entries(stats).map(([k, v], idx) => (
-                                    <tr key={k} className={`group transition ${idx % 2 === 0 ? 'bg-gray-100 dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900'} hover:bg-blue-50 dark:hover:bg-blue-950/60`}>
-                                        <td className="px-4 py-2 rounded-l-lg font-medium align-middle">
-                                            <span className="inline-block w-2 h-2 rounded-full bg-blue-400/60 group-hover:bg-blue-500/80 mr-2"></span>
-                                            {k}
-                                        </td>
-                                        <td className="px-4 py-2 text-blue-600 dark:text-blue-200 font-bold tracking-wide text-center align-middle">
-                                            {v.hours}시간 {v.minutes}분
-                                        </td>
-                                        <td className="px-4 py-2 rounded-r-lg text-purple-600 dark:text-purple-200 font-semibold text-center align-middle">
-                                            {v.days.size}
-                                        </td>
-                                    </tr>
-                                ))}
+                                {Object.entries(stats).map(([k, v], idx) => {
+                                    // 표시할 라벨 생성
+                                    let displayLabel = k;
+                                    if (mode === 'week' && v.weekStart && v.weekEnd) {
+                                        displayLabel = `${v.weekStart} ~ ${v.weekEnd}`;
+                                    } else if (mode === 'month') {
+                                        const [year, month] = k.split('-');
+                                        displayLabel = `${year}년 ${parseInt(month)}월`;
+                                    }
+                                    
+                                    return (
+                                        <tr key={k} className={`group transition ${idx % 2 === 0 ? 'bg-gray-100 dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900'} hover:bg-blue-50 dark:hover:bg-blue-950/60`}>
+                                            <td className="px-4 py-2 rounded-l-lg font-medium align-middle">
+                                                <span className="inline-block w-2 h-2 rounded-full bg-blue-400/60 group-hover:bg-blue-500/80 mr-2"></span>
+                                                {displayLabel}
+                                            </td>
+                                            <td className="px-4 py-2 text-blue-600 dark:text-blue-200 font-bold tracking-wide text-center align-middle">
+                                                {v.hours}시간 {v.minutes}분
+                                            </td>
+                                            <td className="px-4 py-2 rounded-r-lg text-purple-600 dark:text-purple-200 font-semibold text-center align-middle">
+                                                {v.days.size}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>

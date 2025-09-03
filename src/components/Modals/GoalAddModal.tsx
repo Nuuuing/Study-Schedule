@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import type { Participant } from '@/types'
+import type { UserDataT } from '@/modules/types'
 
 type GoalModalProps = {
+    userList: UserDataT[]|null;
     open: boolean;
-    participants: Participant[];
     onAdd: (participantId: string, content: string) => void;
     onClose: () => void;
 };
 
 export const GoalAddModal = (props: GoalModalProps) => {
-    const { open, participants, onAdd, onClose } = props;
+    const { userList, open, onAdd, onClose } = props;
     const [selectedIdx, setSelectedIdx] = useState('');
     const [content, setContent] = useState('');
     const [addDisabled, setAddDisabled] = useState<boolean>(false);
@@ -30,10 +30,10 @@ export const GoalAddModal = (props: GoalModalProps) => {
     }, [selectedIdx, content])
 
     const handleAddGoal = () => {
-        if (!addDisabled && selectedIdx !== '' && content) {
+        if (!addDisabled && selectedIdx !== '' && content && userList) {
             const idx = parseInt(selectedIdx, 10);
-            if (!isNaN(idx) && participants[idx]) {
-                onAdd(participants[idx].id, content);
+            if (!isNaN(idx) && userList[idx]) {
+                onAdd(userList[idx].id, content);
                 onClose();
             }
         }
@@ -49,13 +49,13 @@ export const GoalAddModal = (props: GoalModalProps) => {
                     value={selectedIdx}
                     onChange={e => setSelectedIdx(e.target.value)}
                     className="w-full p-3 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 shadow-sm hover:border-gray-300 dark:hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={participants.length === 0}
+                    disabled={userList?.length === 0}
                 >
                     <option value="">참여자 선택</option>
-                    {participants
-                        .sort((a, b) => a.name.localeCompare(b.name, 'ko', { numeric: true }))
+                    {userList
+                        ?.sort((a, b) => a.name.localeCompare(b.name, 'ko', { numeric: true }))
                         .map((p, idx) => (
-                        <option key={p.id + '-' + idx} value={participants.indexOf(p).toString()}>{p.name}</option>
+                        <option key={p.id + '-' + idx} value={userList.indexOf(p).toString()}>{p.name}</option>
                     ))}
                 </select>
                 <input

@@ -1,11 +1,24 @@
-import React from 'react';
-import { useTheme } from 'next-themes';
+import React, { useState, useEffect } from 'react';
 
 export const ThemeToggle = () => {
-    const { theme, setTheme } = useTheme();
-    if (theme === undefined) return null;
-    const isDarkMode = theme === 'dark';
-    const toggleTheme = () => setTheme(isDarkMode ? 'light' : 'dark');
+    const [isDarkMode, setIsDarkMode] = useState(false);
+
+    useEffect(() => {
+        // 초기 테마 설정 (시스템 설정 또는 localStorage에서 가져오기)
+        const savedTheme = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const initialDark = savedTheme ? savedTheme === 'dark' : systemDark;
+        
+        setIsDarkMode(initialDark);
+        document.documentElement.classList.toggle('dark', initialDark);
+    }, []);
+
+    const toggleTheme = () => {
+        const newDarkMode = !isDarkMode;
+        setIsDarkMode(newDarkMode);
+        localStorage.setItem('theme', newDarkMode ? 'dark' : 'light');
+        document.documentElement.classList.toggle('dark', newDarkMode);
+    };
     return (
         <button
             onClick={toggleTheme}
