@@ -4,7 +4,6 @@ const nextConfig = {
   trailingSlash: true,
   images: {
     unoptimized: true
-  },
-  optimizePackageImports: ["@chakra-ui/react"]
+  }
 };
 export default nextConfig;

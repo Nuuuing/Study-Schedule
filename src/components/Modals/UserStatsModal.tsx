@@ -1,7 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { startOfWeek, endOfWeek, format } from 'date-fns';
 import StatsCard from '../Common/StatsCard';
 import useFirebaseState from '@/utils/useFirebaseState';
+import dayjs from 'dayjs';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import weekday from 'dayjs/plugin/weekday';
+import isBetween from 'dayjs/plugin/isBetween';
+
+// dayjs 플러그인 설정
+dayjs.extend(weekOfYear);
+dayjs.extend(weekday);
+dayjs.extend(isBetween);
 
 type UserStatsModalProps = {
     participants: { id: string; name: string; color?: string; icon?: string }[];
@@ -38,9 +46,9 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
         ])).sort();
         
         const getWeek = (date: string) => {
-            const d = new Date(date);
-            const weekStart = startOfWeek(d, { weekStartsOn: 0 }); // 일요일을 주의 시작으로
-            return format(weekStart, 'yyyy-MM-dd');
+            const d = dayjs(date);
+            const weekStart = d.weekday(0); // 일요일을 주의 시작으로
+            return weekStart.format('YYYY-MM-DD');
         };
 
         const group: Record<string, { hours: number, minutes: number, days: Set<string>, weekStart?: string, weekEnd?: string }> = {};
@@ -56,14 +64,14 @@ export const UserStatsModal = (props: UserStatsModalProps) => {
                 key = getWeek(date);
                 // 주별일 때 주의 시작과 끝 날짜 계산
                 if (!group[key]) {
-                    const weekStart = startOfWeek(new Date(date), { weekStartsOn: 0 });
-                    const weekEnd = endOfWeek(new Date(date), { weekStartsOn: 0 });
+                    const weekStart = dayjs(date).weekday(0); // 일요일 시작
+                    const weekEnd = dayjs(date).weekday(6);   // 토요일 마지막
                     group[key] = { 
                         hours: 0, 
                         minutes: 0, 
                         days: new Set(),
-                        weekStart: format(weekStart, 'MM/dd'),
-                        weekEnd: format(weekEnd, 'MM/dd')
+                        weekStart: weekStart.format('MM/DD'),
+                        weekEnd: weekEnd.format('MM/DD')
                     };
                 }
             } else {

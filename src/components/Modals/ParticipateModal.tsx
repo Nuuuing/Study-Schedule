@@ -1,10 +1,10 @@
 import React from 'react';
-import { format } from 'date-fns';
 import { TimePicker } from '../Button';
 import { NameTag } from '../Common';
 import { UserDataT, TimeSlot } from '@/modules/types';
 import useFirebaseState from '@/utils/useFirebaseState';
 import { useToast } from '@/contexts/ToastContext';
+import dayjs from 'dayjs';
 
 type ParticipateDetail = {
     present?: boolean;
@@ -98,7 +98,7 @@ export const ParticipateModal = (props: ParticipateModalProps) => {
     const saveUserData = async (userId: string, detail: ParticipateDetail) => {
         if (!date) return;
 
-        const dateKey = format(date, 'yyyy-MM-dd');
+        const dateKey = dayjs(date).format('YYYY-MM-DD');
 
         try {
             // 즉시 UI 업데이트
@@ -281,7 +281,7 @@ export const ParticipateModal = (props: ParticipateModalProps) => {
     const handleRemoveUser = async (id: string) => {
         if (!date) return;
 
-        const dateKey = format(date, 'yyyy-MM-dd');
+        const dateKey = dayjs(date).format('YYYY-MM-DD');
 
         try {
             // 로컬 상태에서 제거
@@ -314,7 +314,7 @@ export const ParticipateModal = (props: ParticipateModalProps) => {
     };
 
     if (!open || !date) return null;
-    const dateKey = date instanceof Date ? format(date, 'yyyy-MM-dd') : '';
+    const dateKey = date instanceof Date ? dayjs(date).format('YYYY-MM-DD') : '';
 
     // 스케줄 관련 함수들
     const handleAddSchedule = async (dateKey: string, content: string) => {
@@ -363,7 +363,7 @@ export const ParticipateModal = (props: ParticipateModalProps) => {
                 <div className="px-3 sm:px-6 py-2 sm:py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700">
                     <div className="flex items-center justify-between">
                         <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">
-                            📅 {date && date instanceof Date ? format(date, 'yyyy년 M월 d일') : ''}
+                            📅 {date && date instanceof Date ? dayjs(date).format('YYYY년 M월 D일') : ''}
                         </h2>
                         <button
                             onClick={onClose}

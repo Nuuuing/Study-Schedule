@@ -1,138 +1,154 @@
-import React from 'react';
-import { format, isToday } from 'date-fns';
-import type { Participate } from '@/modules/types/types';
-import useFirebaseState from '@/utils/useFirebaseState';
-import { NameTag } from '../Common';
+import { useCurrentDate, useSetCurrentDate } from "@/modules/stores/calendarStore";
+import dayjs from "dayjs";
+import { useState, useEffect } from "react";
 
-interface CalendarProps {
-    daysInMonth: Date[];
-    currentDate: Date;
-    onDayClick: (date: Date) => void;
-    participate: Participate; // 외부에서 전달받는 participate 데이터
-    userList: Array<{ id: string; name: string; color?: string; icon?: string }>; // 외부에서 전달받는 userList
-    filterUserId?: string; // 필터링할 사용자 ID
-}
-const Calendar = (props: CalendarProps) => {
-    const { daysInMonth, currentDate, onDayClick, participate, userList, filterUserId } = props;
-    const { schedules } = useFirebaseState();
+export const Calendar = () => {
+    const currentDate = useCurrentDate();
+    const setCurrentDate = useSetCurrentDate();
+    const [calendarDays, setCalendarDays] = useState<Date[]>([]);
 
-    const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+
+    // 이전 달로 이동
+    const prevMonth = () => {
+        setCurrentDate(dayjs(currentDate).subtract(1, 'month').toDate());
+    };
+
+    // 다음 달로 이동
+    const nextMonth = () => {
+        setCurrentDate(dayjs(currentDate).add(1, 'month').toDate());
+    };
+
+    // 오늘 날짜로 이동
+    const goToToday = () => {
+        setCurrentDate(new Date());
+    };
+    
+    // 캘린더 일자 계산
+    const calculateCalendarDays = () => {
+        const startOfMonth = dayjs(currentDate).startOf('month');
+        const endOfMonth = dayjs(currentDate).endOf('month');
+        
+        // 이번 달 첫 날의 요일 (0: 일요일, 6: 토요일)
+        const startWeekday = startOfMonth.day();
+        
+        // 이번 달의 마지막 날짜
+        const endDate = endOfMonth.date();
+        
+        // 이번 달의 마지막 날의 요일 (0: 일요일, 6: 토요일)
+        const endWeekday = endOfMonth.day();
+        
+        // 캘린더에 표시할 날짜들 (이전 달, 현재 달, 다음 달)
+        const days: Date[] = [];
+        
+        // 이전 달의 날짜들 추가
+        for (let i = startWeekday - 1; i >= 0; i--) {
+            const prevDate = startOfMonth.subtract(i + 1, 'day').toDate();
+            days.push(prevDate);
+        }
+        
+        // 현재 달의 날짜들 추가
+        for (let i = 1; i <= endDate; i++) {
+            const currentMonthDate = dayjs(startOfMonth).date(i).toDate();
+            days.push(currentMonthDate);
+        }
+        
+        if (endWeekday < 6) {
+            // 마지막 날 이후 해당 주의 토요일까지만 날짜 추가 (6 - endWeekday)일 추가
+            for (let i = 1; i <= (6 - endWeekday); i++) {
+                const nextDate = endOfMonth.add(i, 'day').toDate();
+                days.push(nextDate);
+            }
+        }
+        
+        setCalendarDays(days);
+    };
+    
+    useEffect(() => {
+        calculateCalendarDays();
+    }, [currentDate]);
 
     return (
-        <div
-            className=" bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-[#e9e9e9] dark:border-gray-700
-                p-2 sm:p-3 md:p-4 lg:p-6 mt-2 mb-4 overflow-x-auto w-full transition-all"
-            style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-            <div className="grid grid-cols-7 mb-2 text-center text-sm sm:text-sm font-bold text-gray-400 dark:text-gray-500 select-none">
-                {weekDays.map((w: string, index: number) => (
-                    <div key={index} className="py-1">{w}</div>
+        <div className="calendar-container p-2 pb-1 h-full flex flex-col" style={{ maxHeight: 'calc(100vh - 24px)' }}>
+            {/* 캘린더 헤더 */}
+            <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={prevMonth}
+                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <h2 className="text-xl font-semibold">
+                        {dayjs(currentDate).format('YYYY년 M월')}
+                    </h2>
+                    <button 
+                        onClick={nextMonth}
+                        className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+                <button 
+                    onClick={goToToday}
+                    className="px-3 py-1 rounded bg-blue-500 text-white text-sm hover:bg-blue-600"
+                >
+                    오늘
+                </button>
+            </div>
+            
+            {/* 요일 헤더 */}
+            <div className="grid grid-cols-7 gap-0.5 mb-0.5 text-center font-medium">
+                {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+                    <div key={day} className={`text-xs ${index === 0 ? 'text-red-500' : index === 6 ? 'text-blue-500' : ''}`}>
+                        {day}
+                    </div>
                 ))}
             </div>
-            <div className="relative">
-                <div
-                    className="
-                        relative
-                        grid grid-cols-7
-                        gap-1.5 sm:gap-2 md:gap-3 lg:gap-4
-                        w-full
-                        md:rounded-2xl
-                        min-h-[70vh] sm:min-h-[60vw] md:min-h-[400px] lg:min-h-[500px]
-                        text-sm sm:text-sm md:text-base
-                    "
-                >
-                    {daysInMonth.map((day) => {
-                        const isCurrentMonth = day.getMonth() === currentDate.getMonth();
-                        const isTodayCell = isToday(day);
-                        const dateKey = format(day, 'yyyy-MM-dd');
-                        const attList = participate[dateKey] ? Object.keys(participate[dateKey]) : [];
+            
+            {/* 캘린더 그리드 */}
+            <div className="grid grid-cols-7 gap-0.5 border-gray-200 dark:border-gray-700 flex-grow h-full" style={{ gridTemplateRows: 'repeat(5, 1fr)' }}>
+                {calendarDays.map((day, index) => {
+                    const dayObj = dayjs(day);
+                    const dateKey = dayObj.format('YYYY-MM-DD');
+                    const isCurrentMonthDay = dayObj.month() === dayjs(currentDate).month();
+                    const isSelectedDate = dayObj.isToday();
 
-                        return (
-                            <div
-                                key={day.toString()}
-                                onClick={() => onDayClick(day)}
-                                className={`rounded-lg sm:rounded-xl min-h-[100px] sm:min-h-[80px] md:min-h-[90px] lg:min-h-[100px] flex flex-col gap-1 sm:gap-2 relative z-10
-                                cursor-pointer border transition-all px-2 py-2 sm:px-2 sm:py-2 ${!isCurrentMonth ? 'opacity-60' : ''}
-                                shadow-sm active:scale-[0.98] select-none justify-between 
-                                ${isTodayCell
-                                        ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50'
-                                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-700 hover:border-blue-200 dark:hover:border-gray-600'
-                                    }`}
-                                tabIndex={0}
-                                role="button"
-                                aria-label={format(day, 'yyyy-MM-dd')}
-                            >
-                                <div className="flex items-center justify-between mb-1">
-                                    <span
-                                        className={`font-bold text-lg sm:text-lg
-                                    ${isTodayCell
-                                                ? 'text-white bg-blue-500 sm:text-blue-600 sm:dark:text-blue-300 sm:bg-transparent'
-                                                : isCurrentMonth ? 'text-gray-900 dark:text-gray-200'
-                                                    : 'text-gray-300 dark:text-gray-500 opacity-60'}
-                                    ${isTodayCell ? 'rounded-full w-8 h-8 flex items-center justify-center sm:w-auto sm:h-auto sm:rounded-none' : ''}
-                                `}
-                                        style={{
-                                            minWidth: isTodayCell ? '32px' : undefined,
-                                            minHeight: isTodayCell ? '32px' : undefined,
-                                        }}
-                                    >
-                                        {format(day, 'd')}
-                                    </span>
-                                    {isTodayCell && <span className="hidden sm:inline text-xs bg-blue-500 text-white px-2 py-1 rounded-full ml-2">오늘</span>}
-                                </div>
-                                {/* 개별 스케줄 표시 */}
-                                {schedules[dateKey] && schedules[dateKey].length > 0 && (
-                                    <div className="mb-1 flex flex-col gap-1">
-                                        {schedules[dateKey].map((item, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="text-xs text-blue-700 dark:text-blue-200 bg-blue-50 dark:bg-blue-900 rounded-md px-1.5 py-1 truncate"
-                                            >
-                                                {item.content}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                                <div className="flex flex-col gap-1 sm:gap-1 flex-1 justify-center overflow-hidden">
-                                    <div className="flex flex-wrap gap-0.5 w-full text-xs justify-start items-start overflow-hidden">
-                                        {attList
-                                            .filter(pid => !filterUserId || pid === filterUserId) // 필터링 로직 추가
-                                            .map(pid => {
-                                                const p = userList.find(u => u.id === pid);
-                                                if (!p) return null;
-                                                const isAttend = participate[dateKey][pid];
-                                                
-                                                // 모바일에서는 단순히 점으로만 표시
-                                                return (
-                                                    <div key={p.id} className="block">
-                                                        {/* 모바일용 - 점만 표시 */}
-                                                        <span
-                                                            className="md:hidden inline-block w-3 h-3 rounded-full border-2 border-white shadow-sm"
-                                                            style={{
-                                                                backgroundColor: p.color || '#6366f1',
-                                                                opacity: isAttend.present ? 1 : 0.4,
-                                                            }}
-                                                            title={`${p.name} (${isAttend.present ? '참석' : '미참'})`}
-                                                        />
-                                                        
-                                                        {/* 데스크톱용 - 기존 태그 형태 */}
-                                                        <NameTag
-                                                            name={p.name}
-                                                            color={p.color}
-                                                            present={isAttend.present}
-                                                        />
-                                                    </div>
-                                                );
-                                            })}
-                                    </div>
+                    return (
+                        <div
+                            key={index}
+                            className={`h-full min-h-0 border-b border-r border-gray-200 dark:border-gray-700 p-0.5 transition-colors 
+                                ${index % 7 === 6 ? 'border-r-0' : ''}
+                                ${isCurrentMonthDay ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900/30 text-gray-400 dark:text-gray-600'}
+                                ${isSelectedDate ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+                                hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer
+                            `}
+                        >
+                            <div className="flex flex-col h-full">
+                                {/* 날짜 표시 */}
+                                <div className={`
+                                        text-right p-0.5
+                                        ${!isCurrentMonthDay ? 'text-gray-400 dark:text-gray-600' : ''}
+                                        ${isSelectedDate ? 'font-bold' : ''}
+                                    `}>
+                                    {isSelectedDate ? (
+                                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-500 text-white text-xs">
+                                            {dayObj.format('D')}
+                                        </span>
+                                    ) : (
+                                        <span className={`text-xs ${isCurrentMonthDay ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}`}>
+                                            {dayObj.format('D')}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
-                        );
-                    })}
-                </div>
+                        </div>
+                    );
+                })}
             </div>
         </div>
-    );
-};
-
-export default Calendar;
+    )
+}
