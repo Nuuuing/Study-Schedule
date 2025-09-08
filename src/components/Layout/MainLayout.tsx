@@ -10,7 +10,7 @@ export const MainLayout = (props: MainLayoutProps) => {
     return (
         <div className="w-[100%] h-[100%]">
             <Header />
-            <div className="w-[100%] mt-[1rem]">
+            <div className="w-[100%] mt-[1rem] h-[100%] px-[1rem]">
                 {children}
             </div>
         </div>

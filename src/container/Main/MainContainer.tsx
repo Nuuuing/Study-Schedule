@@ -14,7 +14,7 @@ export const MainContainer = () => {
 
     return (
         <>
-            <div className="flex w-full h-screen">
+            <div className="flex w-full h-[100%]">
                 <div className="w-[20%] pt-2">
                     <SectionLabel>
                         {(currentDate.getMonth() + 1 < 10
@@ -27,7 +27,7 @@ export const MainContainer = () => {
                         }
                     </SectionLabel>
                 </div>
-                <div className="w-[80%] h-full">
+                <div className="w-[80%] h-[100%]">
                     <Calendar />
                 </div>
             </div>
