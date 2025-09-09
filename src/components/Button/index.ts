@@ -1,3 +1,4 @@
 export * from './TimeEditButton'
 export * from './TimePicker'
-export * from './ThemeEditButton'
+export * from './PixelThemeButton'
+export * from './ThemeButtonGroup'
