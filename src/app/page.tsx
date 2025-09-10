@@ -1,7 +1,6 @@
 'use client'
 
-import { MainLayout } from "@/components/Layout"
-import { AuthGuard } from "@/components/auth"
+import { MainLayout, AuthGuard } from "@/components"
 import { MainContainer } from "@/container"
 
 export default function Main() {

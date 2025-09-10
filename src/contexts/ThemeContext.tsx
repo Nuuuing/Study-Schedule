@@ -4,7 +4,6 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { Theme, ThemeName, themes, DEFAULT_THEME } from '../modules/types/theme';
 
-// 테마 컨텍스트 타입 정의
 interface ThemeContextType {
     currentTheme: ThemeName;
     theme: Theme;
@@ -12,16 +11,16 @@ interface ThemeContextType {
     availableThemes: Theme[];
 }
 
-// 테마 컨텍스트 생성
+// 테마 컨텍스트
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// 쿠키 이름 상수
+// 쿠키 이름
 const THEME_COOKIE_NAME = 'user_theme_preference';
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const [currentTheme, setCurrentTheme] = useState<ThemeName>(DEFAULT_THEME);
 
-    // 초기 테마 설정 (쿠키 또는 기본값)
+    // 초기 테마 설정
     useEffect(() => {
         const savedTheme = Cookies.get(THEME_COOKIE_NAME) as ThemeName | undefined;
         if (savedTheme && themes[savedTheme]) {
@@ -33,7 +32,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         if (typeof document === 'undefined') return;
         
-        // HTML 요소에 테마 속성 설정 (Tailwind 유틸리티 적용을 위해)
+        // HTML 요소에 테마 속성 설정
         document.documentElement.setAttribute('data-theme', currentTheme);
         
         console.log(`Theme changed to: ${currentTheme}`);
@@ -42,7 +41,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         Cookies.set(THEME_COOKIE_NAME, currentTheme, { expires: 365 }); // 1년 유효
     }, [currentTheme]);
 
-    // 테마 변경 함수
+    // 테마 변경
     const setTheme = (newTheme: ThemeName) => {
         if (themes[newTheme]) {
             setCurrentTheme(newTheme);
@@ -63,7 +62,6 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     );
 };
 
-// 테마 훅 생성
 export const useTheme = () => {
     const context = useContext(ThemeContext);
     if (context === undefined) {

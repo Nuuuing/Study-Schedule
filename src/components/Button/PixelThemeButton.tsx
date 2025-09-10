@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { ThemeName } from '../../modules/types/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import { ThemeName } from '@/modules/types/theme';
 
 interface PixelThemeButtonProps {
   targetTheme: ThemeName;
@@ -31,44 +31,44 @@ export const PixelThemeButton: React.FC<PixelThemeButtonProps> = ({
     switch (targetTheme) {
       case '1':
         return {
-          buttonColor: 'bg-[#FFD485]',
-          borderColor: 'border-[#E8B55D]',
-          shadowColor: 'shadow-[#D19E45]',
+          buttonColor: 'bg-[#B09B8C]',
+          borderColor: 'border-[#4E423D]',
+          shadowColor: 'shadow-[#554f4c]',
           icon: (
-            <div className="text-[#B8834F] font-bold">
+            <div className="text-[#4E423D] font-bold">
               <span className="text-lg">1</span>
             </div>
           )
         };
       case '2':
         return {
-          buttonColor: 'bg-[#94E8E7]',
-          borderColor: 'border-[#5DC7C6]',
-          shadowColor: 'shadow-[#45A4A2]',
+          buttonColor: 'bg-[#A2D2FF]',
+          borderColor: 'border-[#0B4F6C]',
+          shadowColor: 'shadow-[#214250]',
           icon: (
-            <div className="text-[#3A9B9A] font-bold">
+            <div className="text-[#0B4F6C] font-bold">
               <span className="text-lg">2</span>
             </div>
           )
         };
       case '3':
         return {
-          buttonColor: 'bg-[#FFAFD9]',
-          borderColor: 'border-[#E884B3]',
-          shadowColor: 'shadow-[#D2679C]',
+          buttonColor: 'bg-[#ffdbec]',
+          borderColor: 'border-[#483D8B]',
+          shadowColor: 'shadow-[#413c61]',
           icon: (
-            <div className="text-[#C25B89] font-bold">
+            <div className="text-[#483D8B] font-bold">
               <span className="text-lg">3</span>
             </div>
           )
         };
       case '4':
         return {
-          buttonColor: 'bg-[#E2E2E2]',
-          borderColor: 'border-[#ADADAD]',
-          shadowColor: 'shadow-[#8A8A8A]',
+          buttonColor: 'bg-[#94A1B2]',
+          borderColor: 'border-[#16161A]',
+          shadowColor: 'shadow-[#4d4d4d]',
           icon: (
-            <div className="text-[#595959] font-bold">
+            <div className="text-[#16161A] font-bold">
               <span className="text-lg">4</span>
             </div>
           )
