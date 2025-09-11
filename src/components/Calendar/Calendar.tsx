@@ -80,32 +80,58 @@ export const Calendar = () => {
             {/* 캘린더 그리드 */}
             <div className={`calendar-container flex flex-col flex-grow border-2 ${themeClasses.border} rounded-lg ${themeClasses.card} shadow-md overflow-hidden`}>
                 <div
-                    className={`grid grid-cols-7 gap-0 flex-grow h-full w-full`}
+                    className={`grid grid-cols-7 gap-0 flex-grow h-full w-full relative`}
                     style={{ gridTemplateRows: `repeat(${weeksCount}, 1fr)` }}>
+                    
+                    <div className={`absolute inset-0 pointer-events-none border-t border-l ${themeClasses.border}`}>
+                        {Array.from({ length: weeksCount }).map((_, i) => (
+                            <div key={`h-${i}`} 
+                                className={`absolute w-full border-b ${themeClasses.border}`} 
+                                style={{ 
+                                    top: `calc(${(i + 1) / weeksCount * 100}% - 1px)`,
+                                }}
+                            ></div>
+                        ))}
+                        {Array.from({ length: 7 }).map((_, i) => (
+                            <div key={`v-${i}`} 
+                                className={`absolute h-full border-r ${themeClasses.border}`} 
+                                style={{ 
+                                    left: `calc(${(i + 1) / 7 * 100}% - 1px)`,
+                                }}
+                            ></div>
+                        ))}
+                    </div>
+
                     {calendarDays.map((day, index) => {
                         const dayObj = dayjs(day);
                         const isCurrentMonthDay = dayObj.month() === dayjs(currentDate).month();
-                        const isSelectedDate = dayObj.isToday();
+                        const isToday = dayObj.isToday();
                         const isWeekend = dayObj.day() === 0 || dayObj.day() === 6;
 
                         return (
                             <div
                                 key={index}
                                 onClick={() => setSelectedDate(day)}
-                                className={`h-full transition-colors
-                                    ${index % 7 !== 6 ? `border-r border-1 ${themeClasses.border}` : ''}
-                                    ${Math.floor(index / 7) !== weeksCount - 1 ? `border-b border-1 ${themeClasses.border}` : ''}
+                                className={`h-full relative z-2 transition-colors duration-200
                                     ${isCurrentMonthDay ? themeClasses.text : 'opacity-40'}
-                                    ${isSelectedDate ? 'font-bold' : ''}
-                                    
-                                    ${dayjs(day).isSame(selectedDate, 'day') ? `bg-t${currentTheme}-primary/20` : ''}
-                                    hover:bg-t${currentTheme}-primary/10 cursor-pointer
+                                    ${dayjs(day).isSame(selectedDate, 'day') && !isToday ? `${themeClasses.primary} bg-opacity-20` : ''}
+                                    cursor-pointer
                                 `}
+                                onMouseEnter={(e) => {
+                                    if (!dayjs(day).isSame(selectedDate, 'day') || isToday) {
+                                        e.currentTarget.style.backgroundColor = '#00000010'; 
+                                    }
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!dayjs(day).isSame(selectedDate, 'day') || isToday) {
+                                        e.currentTarget.style.backgroundColor = '';
+                                    }
+                                }}
                             >
                                 <div className="flex flex-col h-full">
                                     {/* 날짜 표시 */}
-                                    <div className="text-left p-1 sm:p-2">
-                                        {isSelectedDate ? (
+                                    <div className="text-left p-1 sm:p-1">
+                                        {isToday ? (
                                             <span className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full ${themeClasses.primary} text-t${currentTheme}-card text-xs font-bold`}>
                                                 {dayObj.format('D')}
                                             </span>
@@ -114,7 +140,7 @@ export const Calendar = () => {
                                                 {dayObj.format('D')}
                                             </span>
                                         ) : (
-                                            <span className={`text-xs sm:text-sm ${themeClasses.text}`}>
+                                            <span className={`text-xs sm:text-sm ${themeClasses.text} inline-block`}>
                                                 {dayObj.format('D')}
                                             </span>
                                         )}

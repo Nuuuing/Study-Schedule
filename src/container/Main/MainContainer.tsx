@@ -1,4 +1,4 @@
-import { Calendar, SectionLabel, ThemeButtonGroup, Tooltip } from "@/components";
+import { Calendar, SectionLabel, ThemeButtonGroup, Tooltip, CircleButton } from "@/components";
 import UserInfoContainer from "./UserInfoContainer";
 import { useEffect, useState } from "react";
 import { useCurrentDate, useSetCurrentDate, useResetToday } from "@/modules/stores";
@@ -76,7 +76,7 @@ const MainContainer = () => {
                                     >
                                         <div
                                             className={`flex justify-center items-center px-4 py-[0.4rem] cursor-pointer transition-all duration-150
-                                            border-2 rounded-t-md
+                                            border-2 rounded-t-md hover:bg-black/10
                                             ${activeTab === tab.id
                                                 ? `${themeClasses.card} ${themeClasses.border} shadow-md border-b-transparent`
                                                 : `${themeClasses.border} border-opacity-40 bg-transparent opacity-60 border-b-transparent`
@@ -91,40 +91,40 @@ const MainContainer = () => {
                             <div className="flex-grow flex items-center py-2 sm:py-0">
                                 <div className="flex w-full justify-end px-2 sm:px-4">
                                     <div className="flex items-center space-x-1 sm:space-x-2 mb-[0.2rem]">
-                                        {/* 오른쪽 네비게이션 버튼 */}
-                                        <button
+                                        {/* 네비게이션 버튼 */}
+                                        <CircleButton
                                             onClick={prevMonth}
-                                            className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 ${themeClasses.border} flex items-center justify-center shadow-sm cursor-pointer transition-all duration-150 hover:${themeClasses.card} hover:border-opacity-80 hover:shadow-lg`}
-                                            aria-label="이전 달"
+                                            ariaLabel="이전 달"
+                                            tooltipContent="이전 달"
+                                            tooltipPlacement="top"
+                                            size="md"
                                         >
-                                            <Tooltip content="이전 달" placement="top">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 sm:h-4 sm:w-4 ${themeClasses.text}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
-                                                </svg>
-                                            </Tooltip>
-                                        </button>
-                                        <button
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </CircleButton>
+                                        <CircleButton
                                             onClick={nextMonth}
-                                            className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 ${themeClasses.border} flex items-center justify-center shadow-sm cursor-pointer transition-all duration-150 hover:${themeClasses.card} hover:border-opacity-80 hover:shadow-lg`}
-                                            aria-label="다음 달"
+                                            ariaLabel="다음 달"
+                                            tooltipContent="다음 달"
+                                            tooltipPlacement="top"
+                                            size="md"
                                         >
-                                            <Tooltip content="다음 달" placement="top">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 sm:h-4 sm:w-4 ${themeClasses.text}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-                                                </svg>
-                                            </Tooltip>
-                                        </button>
-                                        <button
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </CircleButton>
+                                        <CircleButton
                                             onClick={() => setShowUserPanel((prev) => !prev)}
-                                            className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 ${themeClasses.border} flex items-center justify-center shadow-sm cursor-pointer transition-all duration-150 hover:${themeClasses.card} hover:border-opacity-80 hover:shadow-lg`}
-                                            aria-label="내정보"
+                                            ariaLabel="내정보"
+                                            tooltipContent="내 정보"
+                                            tooltipPlacement="top"
+                                            size="md"
                                         >
-                                            <Tooltip content="내 정보" placement="top">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 sm:h-4 sm:w-4 ${themeClasses.text}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
-                                            </Tooltip>
-                                        </button>
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                        </CircleButton>
                                     </div>
                                 </div>
                             </div>
@@ -138,7 +138,7 @@ const MainContainer = () => {
                                 </h2>
                                 <button
                                     onClick={goToToday}
-                                    className={`px-2 py-0.5 text-xs rounded-md ${themeClasses.secondary} border ${themeClasses.border} hover:opacity-80 font-bold shadow-sm transition-all hover:shadow`}
+                                    className={`cursor-pointer px-2 py-0.5 text-xs rounded-md ${themeClasses.secondary} border ${themeClasses.border} hover:opacity-80 font-bold shadow-sm transition-all hover:shadow `}
                                 >
                                     Today
                                 </button>
@@ -177,14 +177,15 @@ const MainContainer = () => {
                                     </span>
                                     <span className={`ml-2 text-lg ${themeClasses.accent}`}>✦</span>
                                 </div>
-                                <button
+                                <CircleButton
                                     onClick={() => setShowUserPanel((prev) => !prev)}
-                                    className={`w-9 h-9 rounded-full border-2 ${themeClasses.border} ${themeClasses.card} flex items-center justify-center shadow-md cursor-pointer transition hover:brightness-90 hover:bg-black/10`}
+                                    ariaLabel="내정보"
+                                    size="lg"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${themeClasses.text}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
-                                </button>
+                                </CircleButton>
                             </div>
                         </div>
                         <div className="w-full flex-1 p-2">

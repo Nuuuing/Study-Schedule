@@ -1,3 +1,5 @@
 export * from './ParticipateModal'
 export * from './GoalAddModal'
 export * from './UserStatsModal'
+export * from './CommonModal'
+export * from './SettingModal'

@@ -1,6 +1,7 @@
 'use client';
 
-import { TodoList, Tooltip } from "@/components";
+import { TodoList, Tooltip, CircleButton } from "@/components";
+import { CommonModal, SettingModal } from "@/components/Modals";
 import React, { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,9 @@ const UserInfoContainer = () => {
     const { currentTheme, theme } = useTheme();
     const themeClasses = theme.classes;
     const router = useRouter();
+    
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+    // settingsState는 SettingModal 내부로 이동
 
     const mainBg = currentTheme === '3' ? themeClasses.primary : themeClasses.background;
     // TODO 상태 관리
@@ -20,8 +24,8 @@ const UserInfoContainer = () => {
     const [newTodo, setNewTodo] = useState("");
 
     const handleAddTodo = () => {
-        if (newTodo.trim()) {
-            setTodos([...todos, newTodo]);
+        if (newTodo && typeof newTodo === 'string' && newTodo.trim() !== '') {
+            setTodos([...todos, newTodo.trim()]);
             setNewTodo("");
         }
     };
@@ -33,6 +37,11 @@ const UserInfoContainer = () => {
     const handleEditTodo = (idx: number, value: string) => {
         setTodos(todos.map((todo, i) => (i === idx ? value : todo)));
     };
+    
+    const handleCheckTodo = (idx: number, checked: boolean) => {
+        console.log(`Todo ${idx} checked: ${checked}`);
+    };
+
     return (
         <>
             <div className={`w-full h-full flex flex-col items-center justify-start p-0 ${mainBg} ${themeClasses.text} bg-[size:20px_20px] bg-[-1px_-1px] bg-fixed border-l-2 ${themeClasses.border}`}>
@@ -66,7 +75,7 @@ const UserInfoContainer = () => {
                                 onClick={() => router.push('/stats')}
                                 className={`flex items-center py-1 px-2 rounded-md ${themeClasses.background} hover:bg-black/10 border-2 ${themeClasses.border} font-medium text-sm transition cursor-pointer ${themeClasses.text}`}
                             >
-                                통계보기
+                                통계
                             </button>
                         </Tooltip>
 
@@ -94,20 +103,33 @@ const UserInfoContainer = () => {
                             todos={todos}
                             onDelete={handleDeleteTodo}
                             onEdit={handleEditTodo}
+                            onCheck={handleCheckTodo}
                         />
-                        <div className="flex w-full mt-2 px-1">
+                        <div className="flex w-full mt-2 px-2">
                             <input
-                                className={`flex-1 px-2 py-1 rounded-l border-2 ${themeClasses.border} ${themeClasses.card} ${themeClasses.text}`}
+                                className={`flex-1 px-2.5 py-1 text-xs rounded-l-md border-2 ${themeClasses.border} ${themeClasses.card} ${themeClasses.text}`}
                                 value={newTodo}
                                 onChange={e => setNewTodo(e.target.value)}
                                 placeholder="새 할 일 입력"
-                                style={{ background: themeClasses.background ? undefined : '#fff' }}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        handleAddTodo();
+                                    }
+                                }}
+                                style={{ 
+                                    background: themeClasses.background ? undefined : '#fff',
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.1) inset' 
+                                }}
                             />
                             <button
-                                className={`px-3 py-1 rounded-r border-2 ${themeClasses.border} ${themeClasses.background} ${themeClasses.text} font-medium transition hover:bg-black/10`}
+                                className={`px-4 py-1 text-xs rounded-r-md border-2 border-l-0 ${themeClasses.border} ${themeClasses.primary} ${themeClasses.text} font-medium transition hover:brightness-95 flex items-center justify-center min-w-[60px] cursor-pointer`}
                                 onClick={handleAddTodo}
+                                style={{ 
+                                    textShadow: '0 1px 0 rgba(255,255,255,0.3)',
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                                }}
                             >
-                                추가
+                                <span>추가</span>
                             </button>
                         </div>
                     </div>
@@ -115,17 +137,27 @@ const UserInfoContainer = () => {
             </div>
 
             {/* 설정 */}
-            <button
-                className={`w-7 h-7 flex items-center justify-center rounded-full border-2 ${themeClasses.border} bg-white transition shadow-md fixed right-2 top-17 z-10 cursor-pointer`}
-                style={{ transition: 'background 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.background = '#e5e7eb'}
-                onMouseLeave={e => e.currentTarget.style.background = 'white'}
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${themeClasses.text}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-            </button>
+            <div className="fixed right-2 top-17 z-10">
+                <CircleButton
+                    onClick={() => setIsSettingsModalOpen(true)}
+                    ariaLabel="설정"
+                    tooltipContent="설정"
+                    tooltipPlacement="left"
+                    size="md"
+                    customStyle={{ background: 'white' }}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </CircleButton>
+            </div>
+            
+            {/* 설정 모달 */}
+            <SettingModal
+                isOpen={isSettingsModalOpen}
+                onClose={() => setIsSettingsModalOpen(false)}
+            />
         </>
     );
 };
