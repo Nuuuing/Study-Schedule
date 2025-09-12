@@ -99,39 +99,49 @@ export const CommonModal: React.FC<CommonModalProps> = ({
 
             {/* 모달 내용 */}
             <div
-                className={`${width} ${themeClasses.card} ${themeClasses.text} rounded-xl shadow-xl relative ${animationClass} z-10 max-h-[90vh] flex flex-col border-2 ${themeClasses.border}`}
+                className={`${width} ${themeClasses.card} ${themeClasses.text} rounded-lg relative ${animationClass} z-10 max-h-[90vh] flex flex-col border-3 ${themeClasses.border} shadow-[8px_8px_0] shadow-t${currentTheme}-text`}
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* 헤더 */}
-                {(title || showCloseButton) && (
-                    <div className={`flex items-center justify-between p-4 border-b ${themeClasses.border}`}>
-                        {title && <h3 className="text-lg font-bold">{title}</h3>}
+                <div className={`h-[2.5rem] flex items-center px-4 rounded-t-lg border-b-2 ${themeClasses.primary} ${themeClasses.border} relative`}>
+                    {/* 왼쪽 미니 버튼 영역 */}
+                    <div className='flex gap-1 min-w-[60px]'>
+                        <div className={`w-4 h-4 flex items-center justify-center rounded-2xl border-2 ${themeClasses.border}`}></div>
+                        <div className={`w-4 h-4 flex items-center justify-center rounded-2xl border-2 ${themeClasses.border}`}></div>
+                        <div className={`w-4 h-4 flex items-center justify-center rounded-2xl border-2 ${themeClasses.border}`}></div>
+                    </div>
+                    {title && (
+                        <div className={`absolute left-0 right-0 top-0 h-full flex items-center justify-center pointer-events-none`}> 
+                            <span className={`text-xl font-bold ${themeClasses.text}`}>{title}</span>
+                        </div>
+                    )}
+                    {/* 오른쪽 닫기 버튼 */}
+                    <div className='flex justify-end items-center min-w-[40px] ml-auto'>
                         {showCloseButton && (
                             <button
                                 onClick={onClose}
-                                className={`w-7 h-7 rounded-full ${themeClasses.background} hover:bg-black/10 flex items-center justify-center transition-colors cursor-pointer`}
+                                className={`w-6 h-6 rounded-full ${themeClasses.border} border-2 flex items-center justify-center transition-all hover:scale-95 cursor-pointer`}
                                 aria-label="Close modal"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         )}
                     </div>
-                )}
+                </div>
 
                 {/* 본문 */}
-                <div className="p-4 overflow-y-auto flex-1">
+                <div className={`p-6 ${themeClasses.card} text-t${currentTheme}-card overflow-y-auto flex-1`}>
                     {children}
                 </div>
 
                 {/* 푸터 */}
                 {showFooter && (showCancelButton || showConfirmButton) && (
-                    <div className={`p-4 border-t ${themeClasses.border} flex justify-end space-x-2`}>
+                    <div className={`p-2 flex justify-end space-x-3 border-t-1`}>
                         {showCancelButton && (
                             <button
                                 onClick={onClose}
-                                className={`px-4 py-2 text-sm rounded-md border ${themeClasses.border} ${themeClasses.background} ${themeClasses.text} transition hover:bg-black/5`}
+                                className={`px-3 py-0.5 text-sm rounded-md border-2 transition-all ${themeClasses.primary} ${themeClasses.text} ${themeClasses.border} shadow-[2px_2px_0px] shadow-t${currentTheme}-accent cursor-pointer hover:scale-95`}
                             >
                                 {cancelText}
                             </button>
@@ -146,15 +156,14 @@ export const CommonModal: React.FC<CommonModalProps> = ({
                                         onClose();
                                     }
                                 }}
-                                className={`px-4 py-2 text-sm rounded-md transition ${confirmButtonColor === 'primary' ? `${themeClasses.primary}` :
-                                        confirmButtonColor === 'success' ? `${themeClasses.success}` :
-                                            confirmButtonColor === 'warning' ? `${themeClasses.warning}` :
-                                                confirmButtonColor === 'error' ? `${themeClasses.error}` :
-                                                    `${themeClasses.primary}`
-                                    } ${confirmButtonColor === 'default' ?
-                                        `${themeClasses.background} ${themeClasses.text} border ${themeClasses.border} hover:bg-black/5` :
-                                        'text-white hover:brightness-95'
-                                    }`}
+                                className={`px-3 py-0.5 text-sm rounded-md font-bold border-2 transition-all shadow-[2px_2px_0px] shadow-t${currentTheme}-accent cursor-pointer hover:scale-95 ${
+                                    confirmButtonColor === 'primary' ? `bg-t${currentTheme}-secondary text-t${currentTheme}-card` :
+                                    confirmButtonColor === 'success' ? `${themeClasses.success} text-white` :
+                                    confirmButtonColor === 'warning' ? `${themeClasses.warning} text-white` :
+                                    confirmButtonColor === 'error' ? `${themeClasses.error} text-white` :
+                                    confirmButtonColor === 'default' ? `${themeClasses.card} ${themeClasses.text}` :
+                                    `bg-t${currentTheme}-secondary text-t${currentTheme}-card`
+                                } ${themeClasses.border}`}
                             >
                                 {confirmText}
                             </button>

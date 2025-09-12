@@ -66,6 +66,12 @@ export const Calendar = () => {
         setWeeksCount(calculateWeeksCount(calendarDays));
     }, [calendarDays]);
 
+
+    const handleClickDayCell = (day: Date) => {
+        
+        setSelectedDate(day);
+    }
+
     return (
         <div className="flex flex-col h-full">
             {/* 요일 헤더 */}
@@ -111,22 +117,11 @@ export const Calendar = () => {
                         return (
                             <div
                                 key={index}
-                                onClick={() => setSelectedDate(day)}
+                                onClick={() => handleClickDayCell(day)}
                                 className={`h-full relative z-2 transition-colors duration-200
                                     ${isCurrentMonthDay ? themeClasses.text : 'opacity-40'}
-                                    ${dayjs(day).isSame(selectedDate, 'day') && !isToday ? `${themeClasses.primary} bg-opacity-20` : ''}
-                                    cursor-pointer
+                                    cursor-pointer hover:bg-black/5
                                 `}
-                                onMouseEnter={(e) => {
-                                    if (!dayjs(day).isSame(selectedDate, 'day') || isToday) {
-                                        e.currentTarget.style.backgroundColor = '#00000010'; 
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!dayjs(day).isSame(selectedDate, 'day') || isToday) {
-                                        e.currentTarget.style.backgroundColor = '';
-                                    }
-                                }}
                             >
                                 <div className="flex flex-col h-full">
                                     {/* 날짜 표시 */}
