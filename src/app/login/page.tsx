@@ -13,7 +13,10 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const router = useRouter();
     const { setSignedIn } = useSignInStore();
-    const { setAuthToken, setUserName } = useAuthStore();
+    const { setAuthToken, setUserInfo } = useAuthStore();
+    
+    const { currentTheme, theme } = useTheme();
+    const themeClasses = theme.classes;    
 
     const handleEmailLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -24,7 +27,7 @@ export default function LoginPage() {
             if (email === 'test' && password === '1234') {
                 // 로그인 성공 처리
                 setSignedIn(true);
-                setUserName('테스트 사용자');
+                setUserInfo({ id: 'test-user', name: '테스트 사용자' });
                 setAuthToken('test-token-1234');
                 router.push('/');
             } else {
@@ -41,7 +44,7 @@ export default function LoginPage() {
         try {
             // 구글 로그인 테스트용 처리
             setSignedIn(true);
-            setUserName('구글 테스트 사용자');
+            setUserInfo({ id: 'google-test-user', name: '구글 테스트 사용자', email: 'test@gmail.com' });
             setAuthToken('google-test-token-1234');
             router.push('/');
         } catch (err: any) {
@@ -55,7 +58,7 @@ export default function LoginPage() {
         try {
             // GitHub 로그인 테스트용 처리
             setSignedIn(true);
-            setUserName('GitHub 테스트 사용자');
+            setUserInfo({ id: 'github-test-user', name: 'GitHub 테스트 사용자', email: 'test@github.com' });
             setAuthToken('github-test-token-1234');
             router.push('/');
         } catch (err: any) {
@@ -63,8 +66,6 @@ export default function LoginPage() {
         }
     };
 
-    const { currentTheme, theme } = useTheme();
-    const themeClasses = theme.classes;
 
     return (
         <div className={`flex flex-col items-center justify-center min-h-screen p-4 ${themeClasses.background} ${themeClasses.text} bg-[size:20px_20px] bg-[-1px_-1px] bg-fixed`}>

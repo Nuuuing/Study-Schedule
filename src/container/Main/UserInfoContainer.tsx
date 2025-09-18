@@ -5,6 +5,7 @@ import { CommonModal, SettingModal } from "@/components/Modals";
 import React, { useState } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useRouter } from "next/navigation";
+import { useUserInfo } from "@/modules/stores";
 
 const UserInfoContainer = () => {
     const { currentTheme, theme } = useTheme();
@@ -12,7 +13,7 @@ const UserInfoContainer = () => {
     const router = useRouter();
     
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-    // settingsState는 SettingModal 내부로 이동
+    const userInfo = useUserInfo();
 
     const mainBg = currentTheme === '3' ? themeClasses.primary : themeClasses.background;
     // TODO 상태 관리
@@ -50,8 +51,8 @@ const UserInfoContainer = () => {
                         {/* profile image */}
                         <div className={`w-15 h-15 rounded-full flex items-center justify-center ${themeClasses.primary} border-2 border-t${currentTheme}-text`} />
                         <div className={'ml-2'}>
-                            <span className={`font-bold text-lg ${themeClasses.text}`}>김수진</span>
-                            <p className={`text-xs font-light opacity-80 ${themeClasses.text}`}>yhs04278@naver.com</p>
+                            <span className={`font-bold text-lg ${themeClasses.text}`}>{userInfo?.name}</span>
+                            <p className={`text-xs font-light opacity-80 ${themeClasses.text}`}>{userInfo?.email}</p>
                         </div>
                     </div>
                     {/* Progress Bar */}

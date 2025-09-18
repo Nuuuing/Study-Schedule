@@ -1,4 +1,4 @@
-import { useCurrentDate } from "@/modules/stores";
+import { useCurrentMonth, useSelectedDate, useSetSelectedDate, useSetShowDayModal } from "@/modules/stores";
 import dayjs from "dayjs";
 import isToday from 'dayjs/plugin/isToday';
 import { useState, useEffect } from "react";
@@ -7,16 +7,18 @@ import { useTheme } from "@/contexts/ThemeContext";
 dayjs.extend(isToday);
 
 export const Calendar = () => {
-    const currentDate = useCurrentDate();
+    const currentMonth = useCurrentMonth();
+    const selectedDate = useSelectedDate();
+    const setSelectedDate = useSetSelectedDate();
+    const setShowDayModal = useSetShowDayModal();
     const { currentTheme, theme } = useTheme();
     const themeClasses = theme.classes;
     const [calendarDays, setCalendarDays] = useState<Date[]>([]);
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
     // 캘린더 일자
     const calculateCalendarDays = () => {
-        const startOfMonth = dayjs(currentDate).startOf('month');
-        const endOfMonth = dayjs(currentDate).endOf('month');
+        const startOfMonth = dayjs(currentMonth).startOf('month');
+        const endOfMonth = dayjs(currentMonth).endOf('month');
 
         // 이번 달 첫 요일
         const startWeekday = startOfMonth.day();
@@ -60,7 +62,7 @@ export const Calendar = () => {
 
     useEffect(() => {
         calculateCalendarDays();
-    }, [currentDate]);
+    }, [currentMonth]);
 
     useEffect(() => {
         setWeeksCount(calculateWeeksCount(calendarDays));
@@ -68,10 +70,10 @@ export const Calendar = () => {
 
 
     const handleClickDayCell = (day: Date) => {
-        
         setSelectedDate(day);
+        setShowDayModal(true); // 날짜 선택시 모달 열기
     }
-
+    
     return (
         <div className="flex flex-col h-full">
             {/* 요일 헤더 */}
@@ -110,7 +112,7 @@ export const Calendar = () => {
 
                     {calendarDays.map((day, index) => {
                         const dayObj = dayjs(day);
-                        const isCurrentMonthDay = dayObj.month() === dayjs(currentDate).month();
+                        const isCurrentMonthDay = dayObj.month() === dayjs(currentMonth).month();
                         const isToday = dayObj.isToday();
                         const isWeekend = dayObj.day() === 0 || dayObj.day() === 6;
 

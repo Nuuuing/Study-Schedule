@@ -1,15 +1,22 @@
-import { Calendar, SectionLabel, ThemeButtonGroup, Tooltip, CircleButton } from "@/components";
+import { Calendar, SectionLabel, ThemeButtonGroup, Tooltip, CircleButton, DayModal } from "@/components";
 import UserInfoContainer from "./UserInfoContainer";
 import { useEffect, useState } from "react";
-import { useCurrentDate, useSetCurrentDate, useResetToday } from "@/modules/stores";
+import { useCurrentMonth, useSetCurrentMonth, useResetToCurrentMonth, usePrevMonth, useNextMonth, useSelectedDate, useSetSelectedDate, useShowDayModal, useSetShowDayModal } from "@/modules/stores";
 import { useTheme } from "@/contexts/ThemeContext";
 import dayjs from "dayjs";
 
 const MainContainer = () => {
-    const currentDate = useCurrentDate();
-    const setCurrentDate = useSetCurrentDate();
-    const resetToday = useResetToday();
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const currentMonth = useCurrentMonth();
+    const setCurrentMonth = useSetCurrentMonth();
+    const resetToCurrentMonth = useResetToCurrentMonth();
+    const prevMonthAction = usePrevMonth();
+    const nextMonthAction = useNextMonth();
+    const selectedDate = useSelectedDate();
+    const setSelectedDate = useSetSelectedDate();
+    
+    const showDayModal = useShowDayModal();
+    const setShowDayModal = useSetShowDayModal();
+
     const { currentTheme, theme, setTheme } = useTheme();
     const themeClasses = theme.classes;
     const [showUserPanel, setShowUserPanel] = useState(false);
@@ -23,24 +30,24 @@ const MainContainer = () => {
 
     // 이전 달로 이동
     const prevMonth = () => {
-        setCurrentDate(dayjs(currentDate).subtract(1, 'month').toDate());
+        prevMonthAction();
     };
 
     // 다음 달로 이동
     const nextMonth = () => {
-        setCurrentDate(dayjs(currentDate).add(1, 'month').toDate());
+        nextMonthAction();
     };
 
     // 오늘 날짜로 이동
     const goToToday = () => {
         const today = new Date();
-        setCurrentDate(today);
+        setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
         setSelectedDate(today);
     };
 
     useEffect(() => {
-        resetToday();
-    }, [resetToday]);
+        resetToCurrentMonth();
+    }, [resetToCurrentMonth]);
 
     return (
         <>
@@ -48,9 +55,9 @@ const MainContainer = () => {
             <div className={`hidden md:flex w-full h-full relative ${currentTheme === '3' ? themeClasses.primary : themeClasses.background}`}>
                 <div className={`w-[20%] p-4 border-r-2 ${themeClasses.border}`}>
                     <SectionLabel>
-                        {(currentDate.getMonth() + 1 < 10
-                            ? `0${currentDate.getMonth() + 1}`
-                            : `${currentDate.getMonth() + 1}`)
+                        {(currentMonth.getMonth() + 1 < 10
+                            ? `0${currentMonth.getMonth() + 1}`
+                            : `${currentMonth.getMonth() + 1}`)
                             .split("")
                             .map((char, idx) => (
                                 <span key={idx} className={`px-[0.2rem] ${themeClasses.text}`}>{char}</span>
@@ -78,9 +85,9 @@ const MainContainer = () => {
                                             className={`flex justify-center items-center px-4 py-[0.4rem] cursor-pointer transition-all duration-150
                                             border-2 rounded-t-md hover:bg-black/10
                                             ${activeTab === tab.id
-                                                ? `${themeClasses.card} ${themeClasses.border} shadow-md border-b-transparent`
-                                                : `${themeClasses.border} border-opacity-40 bg-transparent opacity-60 border-b-transparent`
-                                            }`}
+                                                    ? `${themeClasses.card} ${themeClasses.border} shadow-md border-b-transparent`
+                                                    : `${themeClasses.border} border-opacity-40 bg-transparent opacity-60 border-b-transparent`
+                                                }`}
                                             onClick={() => setActiveTab(tab.id)}
                                         >
                                             <span className={`text-xs font-bold ${themeClasses.text}`}>{tab.label}</span>
@@ -134,7 +141,7 @@ const MainContainer = () => {
                         <div className="flex justify-between items-center p-4">
                             <div className="flex items-center">
                                 <h2 className={`text-xl sm:text-2xl font-bold ${themeClasses.text} mr-2`}>
-                                    {dayjs(currentDate).format('YYYY년 M월')}
+                                    {dayjs(currentMonth).format('YYYY년 M월')}
                                 </h2>
                                 <button
                                     onClick={goToToday}
@@ -170,9 +177,9 @@ const MainContainer = () => {
                             <div className="flex justify-between items-center">
                                 <div className={`flex items-center px-4 py-2 ${themeClasses.card} rounded-lg border-2 ${themeClasses.border} shadow-[3px_3px_0px] shadow-t${currentTheme}-text`}>
                                     <span className={`font-bold text-lg ${themeClasses.text}`}>
-                                        {currentDate.getMonth() + 1 < 10
-                                            ? `0${currentDate.getMonth() + 1}`
-                                            : `${currentDate.getMonth() + 1}`}
+                                        {currentMonth.getMonth() + 1 < 10
+                                            ? `0${currentMonth.getMonth() + 1}`
+                                            : `${currentMonth.getMonth() + 1}`}
                                         월
                                     </span>
                                     <span className={`ml-2 text-lg ${themeClasses.accent}`}>✦</span>
@@ -194,6 +201,15 @@ const MainContainer = () => {
                     </>
                 )}
             </div>
+
+            {
+                showDayModal && selectedDate && (
+                    <DayModal
+                        selectedDay={selectedDate}
+                        onClose={() => setShowDayModal(false)}
+                    />
+                )
+            }
         </>
     );
 }

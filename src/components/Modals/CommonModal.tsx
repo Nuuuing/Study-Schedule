@@ -20,24 +20,26 @@ export interface CommonModalProps {
     confirmButtonColor?: 'primary' | 'success' | 'warning' | 'error' | 'default'; // 확인 버튼 색상
 }
 
-export const CommonModal: React.FC<CommonModalProps> = ({
-    isOpen,
-    onClose,
-    title,
-    children,
-    width = 'w-[400px]',
-    showCloseButton = true,
-    closeOnOverlayClick = true,
-    animation = 'scale',
-    // 푸터 관련 속성
-    showFooter = true,
-    showCancelButton = true,
-    showConfirmButton = true,
-    cancelText = '취소',
-    confirmText = '확인',
-    onConfirm,
-    confirmButtonColor = 'primary'
-}) => {
+export const CommonModal: React.FC<CommonModalProps> = (props: CommonModalProps) => {
+    const {
+        isOpen,
+        onClose,
+        title,
+        children,
+        width = 'w-[400px]',
+        showCloseButton = true,
+        closeOnOverlayClick = true,
+        animation = 'scale',
+        // 푸터 관련 속성
+        showFooter = true,
+        showCancelButton = true,
+        showConfirmButton = false,
+        cancelText = '취소',
+        confirmText = '확인',
+        onConfirm,
+        confirmButtonColor = 'primary'
+    } = props;
+
     const { currentTheme, theme } = useTheme();
     const themeClasses = theme.classes;
 
@@ -110,7 +112,7 @@ export const CommonModal: React.FC<CommonModalProps> = ({
                         <div className={`w-4 h-4 flex items-center justify-center rounded-2xl border-2 ${themeClasses.border}`}></div>
                     </div>
                     {title && (
-                        <div className={`absolute left-0 right-0 top-0 h-full flex items-center justify-center pointer-events-none`}> 
+                        <div className={`absolute left-0 right-0 top-0 h-full flex items-center justify-center pointer-events-none`}>
                             <span className={`text-xl font-bold ${themeClasses.text}`}>{title}</span>
                         </div>
                     )}
@@ -156,14 +158,13 @@ export const CommonModal: React.FC<CommonModalProps> = ({
                                         onClose();
                                     }
                                 }}
-                                className={`px-3 py-0.5 text-sm rounded-md font-bold border-2 transition-all shadow-[2px_2px_0px] shadow-t${currentTheme}-accent cursor-pointer hover:scale-95 ${
-                                    confirmButtonColor === 'primary' ? `bg-t${currentTheme}-secondary text-t${currentTheme}-card` :
-                                    confirmButtonColor === 'success' ? `${themeClasses.success} text-white` :
-                                    confirmButtonColor === 'warning' ? `${themeClasses.warning} text-white` :
-                                    confirmButtonColor === 'error' ? `${themeClasses.error} text-white` :
-                                    confirmButtonColor === 'default' ? `${themeClasses.card} ${themeClasses.text}` :
-                                    `bg-t${currentTheme}-secondary text-t${currentTheme}-card`
-                                } ${themeClasses.border}`}
+                                className={`px-3 py-0.5 text-sm rounded-md font-bold border-2 transition-all shadow-[2px_2px_0px] shadow-t${currentTheme}-accent cursor-pointer hover:scale-95 ${confirmButtonColor === 'primary' ? `bg-t${currentTheme}-secondary text-t${currentTheme}-card` :
+                                        confirmButtonColor === 'success' ? `${themeClasses.success} text-white` :
+                                            confirmButtonColor === 'warning' ? `${themeClasses.warning} text-white` :
+                                                confirmButtonColor === 'error' ? `${themeClasses.error} text-white` :
+                                                    confirmButtonColor === 'default' ? `${themeClasses.card} ${themeClasses.text}` :
+                                                        `bg-t${currentTheme}-secondary text-t${currentTheme}-card`
+                                    } ${themeClasses.border}`}
                             >
                                 {confirmText}
                             </button>
