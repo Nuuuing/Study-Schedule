@@ -19,6 +19,30 @@
     -moz-osx-font-smoothing: grayscale;
   }
   
+  /* 모든 스크롤바에서 삼각형 버튼 제거 */
+  ::-webkit-scrollbar-button {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+  }
+  
+  /* 기본 스크롤바 스타일 */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+  
   /* Tailwind CSS를 사용한 테마 스타일로 대체됨 */
 
   .nayn{
@@ -27,7 +51,21 @@
 
   /* 커스텀 스크롤바 스타일 */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 8px;
+    width: 12px;
+  }
+
+  /* 삼각형 버튼 제거 - 전역 적용 */
+  ::-webkit-scrollbar-button {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    background: transparent !important;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-button {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
@@ -35,27 +73,28 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb, #3b82f6);
-  border-radius: 20px;
-  border: 2px solid #fff;
-  background-clip: padding-box;
+    background: var(--scrollbar-thumb, #3b82f6);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
 
   /* 다크 테마용 스크롤바 */
   .dark .custom-scrollbar::-webkit-scrollbar-thumb {
     background: linear-gradient(180deg, #6366f1 0%, #0ea5e9 50%, #334155 100%);
-    border-radius: 20px;
+    border-radius: 10px;
     border: 2px solid transparent;
-    background-clip: content-box;
+    background-clip: padding-box;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb, #2563eb);
-  background-clip: content-box;
+    background: var(--scrollbar-thumb, #2563eb);
+    background-clip: padding-box;
   }
+  
   .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, #0ea5e9 0%, #6366f1 50%, #334155 100%);
-    background-clip: content-box;
+    background-clip: padding-box;
   }
 
   /* Firefox용 스크롤바 스타일 */
@@ -63,6 +102,7 @@
     scrollbar-width: thin;
     scrollbar-color: #3b82f6 transparent;
   }
+  
   .dark .custom-scrollbar {
     scrollbar-color: #6366f1 #1e293b;
   }
@@ -179,16 +219,84 @@
 }
 
 /* 테마별 스크롤바 theme 색상 */
-.scrollbar-thumb-t1-primary::-webkit-scrollbar-thumb { background: #B09B8C; }
-.scrollbar-thumb-t2-primary::-webkit-scrollbar-thumb { background: #74B3CE; }
-.scrollbar-thumb-t3-primary::-webkit-scrollbar-thumb { background: #483D8B; }
-.scrollbar-thumb-t4-primary::-webkit-scrollbar-thumb { background: #E1E1E1; }
-.scrollbar-thumb-t1-primary::-webkit-scrollbar-thumb { background: #B09B8C; border: 1px solid #4E423D; }
-.scrollbar-thumb-t2-primary::-webkit-scrollbar-thumb { background: #74B3CE; border: 1px solid #0B4F6C; }
-.scrollbar-thumb-t3-primary::-webkit-scrollbar-thumb { background: #483D8B; border: 1px solid #483D8B; }
-.scrollbar-thumb-t4-primary::-webkit-scrollbar-thumb { background: #E1E1E1; border: 1px solid #E1E1E1; }
+/* 테마 1: 브라운 */
+.scrollbar-thumb-t1-primary::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.scrollbar-thumb-t1-primary::-webkit-scrollbar-thumb {
+  background: #B09B8C;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scrollbar-thumb-t1-primary::-webkit-scrollbar-thumb:hover {
+  background: #8C7B6B;
+  background-clip: padding-box;
+}
+.scrollbar-thumb-t1-primary::-webkit-scrollbar-button {
+  display: none;
+}
 
-.scrollbar-thumb-t1-primary { scrollbar-color: #B09B8C transparent; }
-.scrollbar-thumb-t2-primary { scrollbar-color: #74B3CE transparent; }
-.scrollbar-thumb-t3-primary { scrollbar-color: #483D8B transparent; }
-.scrollbar-thumb-t4-primary { scrollbar-color: #E1E1E1 transparent; }
+/* 테마 2: 블루 */
+.scrollbar-thumb-t2-primary::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.scrollbar-thumb-t2-primary::-webkit-scrollbar-thumb {
+  background: #74B3CE;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scrollbar-thumb-t2-primary::-webkit-scrollbar-thumb:hover {
+  background: #5293AE;
+  background-clip: padding-box;
+}
+.scrollbar-thumb-t2-primary::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* 테마 3: 퍼플 */
+.scrollbar-thumb-t3-primary::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.scrollbar-thumb-t3-primary::-webkit-scrollbar-thumb {
+  background: #483D8B;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scrollbar-thumb-t3-primary::-webkit-scrollbar-thumb:hover {
+  background: #382D7B;
+  background-clip: padding-box;
+}
+.scrollbar-thumb-t3-primary::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* 테마 4: 그레이 */
+.scrollbar-thumb-t4-primary::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.scrollbar-thumb-t4-primary::-webkit-scrollbar-thumb {
+  background: #E1E1E1;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scrollbar-thumb-t4-primary::-webkit-scrollbar-thumb:hover {
+  background: #C1C1C1;
+  background-clip: padding-box;
+}
+.scrollbar-thumb-t4-primary::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Firefox 스크롤바 */
+.scrollbar-thumb-t1-primary { scrollbar-width: auto; scrollbar-color: #B09B8C transparent; }
+.scrollbar-thumb-t2-primary { scrollbar-width: auto; scrollbar-color: #74B3CE transparent; }
+.scrollbar-thumb-t3-primary { scrollbar-width: auto; scrollbar-color: #483D8B transparent; }
+.scrollbar-thumb-t4-primary { scrollbar-width: auto; scrollbar-color: #E1E1E1 transparent; }

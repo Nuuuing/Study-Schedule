@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { SectionLabel } from '../Label';
 import { getTextColor } from '@/utils/textUtils';
-import useFirebaseState from '@/utils/useFirebaseState';
 import { UserDataT } from '@/modules/types';
 import { useToast } from '@/contexts/ToastContext';
 
@@ -11,9 +10,35 @@ interface UserListProps {
 }
 
 export const UserList = (props: UserListProps) => {
-    const { userList, userSliderClose } = props;
-    const { removeUser, updateUser, addUser } = useFirebaseState();
+    const { userList: initialUserList, userSliderClose } = props;
+    const [userList, setUserList] = useState<UserDataT[]>(initialUserList || []);
     const { showToast } = useToast();
+    
+    // useFirebaseState의 함수들을 로컬 함수로 대체
+    const removeUser = (userId: string) => {
+        setUserList((prev) => prev.filter((user) => user.id !== userId));
+        return Promise.resolve();
+    };
+    
+    const updateUser = (userId: string, data: Partial<UserDataT>) => {
+        setUserList((prev) => 
+            prev.map((user) => 
+                user.id === userId ? { ...user, ...data } : user
+            )
+        );
+        return Promise.resolve();
+    };
+    
+    const addUser = (name: string) => {
+        const newUser: UserDataT = {
+            id: `user-${Date.now()}`,
+            name,
+            color: `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`,
+            icon: 'default'
+        };
+        setUserList((prev) => [...prev, newUser]);
+        return Promise.resolve();
+    };
 
     const [newParticipantName, setNewParticipantName] = useState('');
     const [editId, setEditId] = useState<string | null>(null);
@@ -203,8 +228,8 @@ export const UserList = (props: UserListProps) => {
                             <button
                                 onClick={async () => {
                                     if (deleteConfirmId) {
-                                        const result = await removeUser(deleteConfirmId);
-                                        showToast(result.message, result.success ? 'success' : 'error');
+                                        await removeUser(deleteConfirmId);
+                                        showToast('참여자가 삭제되었습니다.', 'success');
                                         setDeleteConfirmId(null);
                                     }
                                 }}

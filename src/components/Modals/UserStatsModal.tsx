@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import StatsCard from '../Common/StatsCard';
-import useFirebaseState from '@/utils/useFirebaseState';
 import dayjs from 'dayjs';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekday from 'dayjs/plugin/weekday';
@@ -18,12 +17,19 @@ type UserStatsModalProps = {
     onClose: () => void;
 };
 
+// Goal 타입 정의
+interface Goal {
+    id: string;
+    userId: string;
+    content: string;
+    completed: boolean;
+}
+
 export const UserStatsModal = (props: UserStatsModalProps) => {
     const { participants, studyHours, participate, onClose } = props;
     const [selectedUser, setSelectedUser] = useState('');
     const [mode, setMode] = useState<'month' | 'week' | 'day'>('month');
-
-    const { goals } = useFirebaseState();
+    const [goals, setGoals] = useState<Goal[]>([]);
 
     // 시간 차이 계산 함수
     function getTimeDiff(start: string, end: string) {

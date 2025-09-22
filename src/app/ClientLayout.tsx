@@ -10,10 +10,10 @@ interface ClientLayoutProps {
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
     return (
-                <ThemeProvider>
-                    <ToastProvider>
-                        {children}
-                    </ToastProvider>
-                </ThemeProvider>
+        <ThemeProvider>
+            <ToastProvider>
+                {children}
+            </ToastProvider>
+        </ThemeProvider>
     );
 }

@@ -32,7 +32,6 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         if (typeof document === 'undefined') return;
         
-        // HTML 요소에 테마 속성 설정
         document.documentElement.setAttribute('data-theme', currentTheme);
         
         console.log(`Theme changed to: ${currentTheme}`);

@@ -2,7 +2,6 @@ import React from 'react';
 import { TimePicker } from '../Button';
 import { NameTag } from '../Common';
 import { UserDataT, TimeSlot } from '@/modules/types';
-import useFirebaseState from '@/utils/useFirebaseState';
 import { useToast } from '@/contexts/ToastContext';
 import dayjs from 'dayjs';
 
@@ -30,14 +29,75 @@ type ParticipateModalProps = {
 export const ParticipateModal = (props: ParticipateModalProps) => {
     const { open, date, userList, initialParticipateInput, setParticipateDetail, removeParticipateForDate, onClose, onParticipateUpdate } = props;
 
-    // Firebase 상태 가져오기
-    const { schedules, addSchedule, removeSchedule, updateSchedule } = useFirebaseState();
     const { showToast } = useToast();
 
     const [tab, setTab] = React.useState<'participate' | 'schedule'>('participate');
     const [scheduleInput, setScheduleInput] = React.useState('');
     const [editIdx, setEditIdx] = React.useState<number | null>(null);
     const [editValue, setEditValue] = React.useState('');
+    const [schedules, setSchedules] = React.useState<Record<string, ScheduleItem[]>>({});
+    
+    // useFirebaseState의 함수들을 로컬 함수로 대체
+    const addSchedule = async (dateKey: string, content: string) => {
+        if (!content.trim()) return;
+        
+        try {
+            const newSchedule: ScheduleItem = {
+                content,
+                createdAt: Date.now()
+            };
+            
+            const updatedSchedules = { ...schedules };
+            if (!updatedSchedules[dateKey]) {
+                updatedSchedules[dateKey] = [];
+            }
+            updatedSchedules[dateKey] = [...updatedSchedules[dateKey], newSchedule];
+            
+            setSchedules(updatedSchedules);
+            return true;
+        } catch (error) {
+            console.error("스케줄 추가 오류:", error);
+            return false;
+        }
+    };
+    
+    const removeSchedule = async (dateKey: string, index: number) => {
+        try {
+            const updatedSchedules = { ...schedules };
+            if (updatedSchedules[dateKey] && updatedSchedules[dateKey].length > index) {
+                updatedSchedules[dateKey] = updatedSchedules[dateKey].filter((_, i) => i !== index);
+                if (updatedSchedules[dateKey].length === 0) {
+                    delete updatedSchedules[dateKey];
+                }
+                setSchedules(updatedSchedules);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error("스케줄 제거 오류:", error);
+            return false;
+        }
+    };
+    
+    const updateSchedule = async (dateKey: string, index: number, newContent: string) => {
+        if (!newContent.trim()) return false;
+        
+        try {
+            const updatedSchedules = { ...schedules };
+            if (updatedSchedules[dateKey] && updatedSchedules[dateKey].length > index) {
+                updatedSchedules[dateKey][index] = {
+                    ...updatedSchedules[dateKey][index],
+                    content: newContent
+                };
+                setSchedules(updatedSchedules);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error("스케줄 업데이트 오류:", error);
+            return false;
+        }
+    };
     const [selectedUserId, setSelectedUserId] = React.useState('');
     const [participateInput, setParticipateInput] = React.useState<Record<string, ParticipateDetail>>(initialParticipateInput);
 

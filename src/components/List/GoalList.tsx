@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { SectionLabel } from '../Label';
-import useFirebaseState from '@/utils/useFirebaseState';
 import { getTextColor } from '@/utils/textUtils';
 import { UserDataT, Goal } from '@/modules/types';
 import { useToast } from '@/contexts/ToastContext';
@@ -11,8 +10,34 @@ interface GoalListProps{
 }
 export const GoalList = (props: GoalListProps) => {
     const {userList, onGoalAdd} = props;
-    const { goals, toggleGoalCompletion, deleteGoal, updateGoal } = useFirebaseState();
+    const [goals, setGoals] = useState<Goal[]>([]);
     const { showToast } = useToast();
+    
+    // useFirebaseState의 함수들을 로컬 함수로 대체
+    const toggleGoalCompletion = (goalId: string, userId: string) => {
+        setGoals((prev) => 
+            prev.map((goal) => 
+                goal.id === goalId && goal.userId === userId 
+                    ? { ...goal, completed: !goal.completed } 
+                    : goal
+            )
+        );
+    };
+    
+    const deleteGoal = (goalId: string, userId: string) => {
+        setGoals((prev) => prev.filter((goal) => !(goal.id === goalId && goal.userId === userId)));
+        return Promise.resolve();
+    };
+    
+    const updateGoal = (goalId: string, userId: string, data: Partial<Goal>) => {
+        setGoals((prev) => 
+            prev.map((goal) => 
+                goal.id === goalId && goal.userId === userId
+                    ? { ...goal, ...data } 
+                    : goal
+            )
+        );
+    };
 
     const [editId, setEditId] = useState<string | null>(null);
     const [editContent, setEditContent] = useState('');
